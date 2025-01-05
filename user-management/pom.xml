@@ -4,6 +4,11 @@
   <artifactId>user-management</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   
+  <properties>
+  <sonar.organization>johariorg</sonar.organization>
+  <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+</properties>
+  
  <dependencies>
  
  <dependency>
@@ -29,6 +34,11 @@
             <artifactId>cucumber-picocontainer</artifactId>
             <version>7.20.1</version>
         </dependency>
+        
+        
 
     </dependencies>
 </project>
+
+
+

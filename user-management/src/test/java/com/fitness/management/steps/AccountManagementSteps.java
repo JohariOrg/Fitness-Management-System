@@ -18,7 +18,7 @@ public class AccountManagementSteps {
     private ClientProfileService clientProfileService;
     private Profile createdProfile;
     private UserService userService;
-    private String currentClientEmail; // Store current client email globally
+    private String currentClientEmail; 
 
     public AccountManagementSteps(ClientProfileService clientProfileService, UserService userService) {
         this.clientProfileService = clientProfileService;
@@ -43,7 +43,7 @@ public class AccountManagementSteps {
             profileData.get("Dietary Restrictions")
         );
 
-        currentClientEmail = profileData.get("Email"); // Set current client email
+        currentClientEmail = profileData.get("Email"); 
         clientProfileService.createProfile(createdProfile, userService);
     }
 
@@ -56,7 +56,7 @@ public class AccountManagementSteps {
     @Given("the client has already created a profile")
     public void the_client_has_already_created_a_profile() {
         createdProfile = new Profile("John Doe", 30, "john.doe@example.com", "Weight Loss", "Vegetarian", "Gluten-Free");
-        currentClientEmail = "john.doe@example.com"; // Set current client email
+        currentClientEmail = "john.doe@example.com"; 
         clientProfileService.createProfile(createdProfile, userService);
     }
 

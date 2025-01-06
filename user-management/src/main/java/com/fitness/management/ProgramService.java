@@ -13,7 +13,7 @@ public class ProgramService {
 
     public boolean addProgram(Program program) {
         if (programs.containsKey(program.getTitle())) {
-            return false; // Program already exists
+            return false; 
         }
         programs.put(program.getTitle(), program);
         return true;
@@ -43,14 +43,14 @@ public class ProgramService {
     }
 
     public List<Program> getAllPrograms() {
-        return new ArrayList<>(programs.values()); // Use the declared 'programs' map
+        return new ArrayList<>(programs.values()); 
     }
     
     public List<Program> getMostPopularPrograms() {
-        return programs.values() // Get the values from the map
-                       .stream() // Stream the collection of programs
-                       .sorted(Comparator.comparingInt(Program::getEnrollment).reversed()) // Sort by enrollment descending
-                       .collect(Collectors.toList()); // Collect to a list
+        return programs.values() 
+                       .stream() 
+                       .sorted(Comparator.comparingInt(Program::getEnrollment).reversed()) 
+                       .collect(Collectors.toList()); 
     }
 
 

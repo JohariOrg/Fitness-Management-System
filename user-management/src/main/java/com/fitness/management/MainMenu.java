@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
             Scanner scanner = new Scanner(System.in);
             boolean exit = false;
 
-            // Load data
+            
             List<User> loadedUsers = PersistenceUtil.loadUserData();
             loadedUsers.forEach(userService::addUser);
 
@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
             scanner.close();
         }
 
-        // Admin Menu
+        
         private static void manageAdminMenu(Scanner scanner) {
             boolean back = false;
             while (!back) {
@@ -77,10 +77,10 @@ import org.slf4j.LoggerFactory;
 
                 switch (choice) {
                     case 1:
-                        manageUserAccountsMenu(scanner); // Separate method for user management
+                        manageUserAccountsMenu(scanner); 
                         break;
                     case 2:
-                        manageProgramMonitoringMenu(scanner); // Separate method for program monitoring
+                        manageProgramMonitoringMenu(scanner); 
                         break;
                     case 3:
                         back = true;
@@ -91,7 +91,7 @@ import org.slf4j.LoggerFactory;
             }
         }
 
-        // User Management Menu (For Admin)
+        
         private static void manageUserAccountsMenu(Scanner scanner) {
             boolean back = false;
             while (!back) {
@@ -135,7 +135,7 @@ import org.slf4j.LoggerFactory;
             }
         }
 
-        // Program Monitoring Menu (For Admin)
+        
         private static void manageProgramMonitoringMenu(Scanner scanner) {
             boolean back = false;
             while (!back) {
@@ -175,7 +175,7 @@ import org.slf4j.LoggerFactory;
             }
         }
 
-        // Instructor Menu
+        
         private static void manageInstructorMenu(Scanner scanner) {
             boolean back = false;
             while (!back) {
@@ -225,7 +225,7 @@ import org.slf4j.LoggerFactory;
 
                 switch (choice) {
                     case 1:
-                        manageClientProfile(scanner); // Handles client profiles
+                        manageClientProfile(scanner); 
                         break;
                     case 2:
                         back = true;
@@ -342,11 +342,11 @@ import org.slf4j.LoggerFactory;
 
         if (user != null && user.getRole().equalsIgnoreCase("Instructor") && !user.isActive()) {
             user.setActive(true);
-            logger.info("Instructor approved successfully."); // Use logger for success message
+            logger.info("Instructor approved successfully."); 
         } else if (user == null) {
-            logger.warn("User not found."); // Use logger for warning
+            logger.warn("User not found."); 
         } else {
-            logger.warn("This user is not eligible for approval."); // Use logger for another warning
+            logger.warn("This user is not eligible for approval."); 
         }
     }
 
@@ -458,7 +458,7 @@ import org.slf4j.LoggerFactory;
 
         Program program = new Program(title, duration, difficulty, goals, price, schedule, videos, documents);
         if (programService.addProgram(program)) {
-            PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms())); // Save programs
+            PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms())); 
             logger.info("Program created successfully.");
         } else {
             logger.warn("Failed to create program. Program with this title may already exist.");
@@ -524,7 +524,7 @@ import org.slf4j.LoggerFactory;
     }
     
     private static void viewMostPopularPrograms() {
-        List<Program> popularPrograms = programService.getMostPopularPrograms(); // Add this method to ProgramService
+        List<Program> popularPrograms = programService.getMostPopularPrograms(); 
         if (popularPrograms.isEmpty()) {
             logger.warn("No programs found.");
         } else {
@@ -533,7 +533,7 @@ import org.slf4j.LoggerFactory;
     }
 
     private static void generateRevenueReport() {
-        Map<String, Double> revenueReport = programService.generateRevenueReport(); // Add this method to ProgramService
+        Map<String, Double> revenueReport = programService.generateRevenueReport(); 
         if (revenueReport.isEmpty()) {
             logger.warn("No revenue data found.");
         } else {
@@ -542,7 +542,7 @@ import org.slf4j.LoggerFactory;
     }
 
     private static void generateAttendanceReport() {
-        Map<String, Integer> attendanceReport = programService.generateAttendanceReport(); // Add this method to ProgramService
+        Map<String, Integer> attendanceReport = programService.generateAttendanceReport(); 
         if (attendanceReport.isEmpty()) {
             logger.warn("No attendance data found.");
         } else {
@@ -551,7 +551,7 @@ import org.slf4j.LoggerFactory;
     }
 
     private static void generateClientProgressReport() {
-        Map<String, String> clientProgressReport = programService.generateClientProgressReport(); // Add this method to ProgramService
+        Map<String, String> clientProgressReport = programService.generateClientProgressReport(); 
         if (clientProgressReport.isEmpty()) {
             logger.warn("No client progress data found.");
         } else {
@@ -560,7 +560,7 @@ import org.slf4j.LoggerFactory;
     }
 
     private static void viewActiveAndCompletedPrograms() {
-        Map<String, List<Program>> categorizedPrograms = programService.getActiveAndCompletedPrograms(); // Add this method to ProgramService
+        Map<String, List<Program>> categorizedPrograms = programService.getActiveAndCompletedPrograms(); 
         if (categorizedPrograms.isEmpty()) {
             logger.warn("No programs found.");
         } else {

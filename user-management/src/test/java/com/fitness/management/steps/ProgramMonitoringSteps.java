@@ -16,9 +16,9 @@ import static org.junit.Assert.assertNotNull;
 public class ProgramMonitoringSteps {
 
     private ProgramService programService;
-    private List<String> popularPrograms; // For storing program titles
-    private Map<String, Object> generatedReport; // Generic Map for reports
-    private Map<String, List<Program>> categorizedPrograms; // For active and completed programs
+    private List<String> popularPrograms; 
+    private Map<String, Object> generatedReport; 
+    private Map<String, List<Program>> categorizedPrograms; 
 
     public ProgramMonitoringSteps() {
         this.programService = new ProgramService(); 
@@ -46,9 +46,9 @@ public class ProgramMonitoringSteps {
     
     @When("the admin generates a report on program revenue")
     public void the_admin_generates_a_report_on_program_revenue() {
-        // Call the service to generate the program revenue report
+        
         Map<String, Double> rawRevenueReport = programService.generateRevenueReport();
-        generatedReport = new HashMap<>(rawRevenueReport); // Convert to Map<String, Object>
+        generatedReport = new HashMap<>(rawRevenueReport); 
     }
 
     @Then("the system should display total revenue for all active and completed programs")

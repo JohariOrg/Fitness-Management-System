@@ -10,15 +10,15 @@ import org.slf4j.LoggerFactory;
 
 public class UserService {
 	private Map<String, User> users = new HashMap<>();
-	 private static final Logger logger = LoggerFactory.getLogger(UserService.class); // Logger definition
+	 private static final Logger logger = LoggerFactory.getLogger(UserService.class); 
 	
 	 public boolean addUser(User user) {
 	        if (users.containsKey(user.getEmail())) {
-	            logger.warn("User with this email already exists: {}", user.getEmail()); // Replacing System.out.println
+	            logger.warn("User with this email already exists: {}", user.getEmail()); 
 	            return false;
 	        }
 	        users.put(user.getEmail(), user);
-	        logger.info("User added successfully: {}", user.getEmail()); // Optional: Log user addition
+	        logger.info("User added successfully: {}", user.getEmail()); 
 	        return true;
 	    }
 

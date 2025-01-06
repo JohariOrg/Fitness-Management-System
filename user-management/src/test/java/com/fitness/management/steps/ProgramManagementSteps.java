@@ -19,7 +19,7 @@ public class ProgramManagementSteps {
 
     @Given("the instructor dashboard is loaded")
     public void the_instructor_dashboard_is_loaded() {
-        // Initialization  shared instance--can be placed here
+        
     }
 
     @When("the instructor creates a new fitness program with:")

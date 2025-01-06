@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ClientProfileService {
-    private static final Logger logger = LoggerFactory.getLogger(ClientProfileService.class); // Add logger
+    private static final Logger logger = LoggerFactory.getLogger(ClientProfileService.class); 
     private Profile profile;
 
     public ClientProfileService() {
@@ -22,12 +22,12 @@ public class ClientProfileService {
 
     public void createProfile(Profile profile, UserService userService) {
         this.profile = profile;
-        logger.info("Profile created: {}", profile); // Replaced System.out.println
+        logger.info("Profile created: {}", profile); 
 
         String email = profile.getEmail();
         User user = new User(profile.getName(), email, "client", true);
         if (!userService.addUser(user)) {
-            logger.warn("User with this email already exists."); // Replaced System.out.println
+            logger.warn("User with this email already exists."); 
         }
 
         // Save the profile persistently
@@ -44,10 +44,10 @@ public class ClientProfileService {
                                         .orElse(null);
 
         if (loadedProfile != null) {
-            logger.info("Profile found: {}", loadedProfile); // Replaced System.out.println
+            logger.info("Profile found: {}", loadedProfile); 
             return loadedProfile;
         } else {
-            logger.warn("No profile found for the given email."); // Replaced System.out.println
+            logger.warn("No profile found for the given email."); 
             return null;
         }
     }
@@ -64,21 +64,21 @@ public class ClientProfileService {
         profile.setDietaryPreferences(dietaryPreferences);
         profile.setDietaryRestrictions(dietaryRestrictions);
 
-        // Save updated profile persistently
+        
         List<Profile> profiles = PersistenceUtil.loadClientProfileDataList();
         profiles.removeIf(p -> p.getEmail().equalsIgnoreCase(email));
         profiles.add(profile);
         PersistenceUtil.saveClientProfileData(profiles);
 
-        logger.info("Profile updated and saved: {}", profile); // Replaced System.out.println
+        logger.info("Profile updated and saved: {}", profile); 
     }
 
     public void deleteProfile(UserService userService) {
         if (profile == null) {
-            logger.warn("No profile exists to delete."); // Replaced System.out.println
+            logger.warn("No profile exists to delete."); 
             return;
         }
-        logger.info("Profile deleted: {}", profile); // Replaced System.out.println
+        logger.info("Profile deleted: {}", profile); 
         userService.removeUserByName(profile.getName());
         PersistenceUtil.deleteClientProfileData();
         this.profile = null;

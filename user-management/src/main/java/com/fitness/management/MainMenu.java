@@ -5,281 +5,246 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.stream.Collectors;
+import java.util.function.Function;
+
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MainMenu {
-    private static final Logger logger = LoggerFactory.getLogger(MainMenu.class);
-    private static UserService userService = new UserService();
-    private static ProgramService programService = new ProgramService();
-    private static ClientProfileService clientProfileService = new ClientProfileService();
-    private static Map<String, Integer> activityData = new HashMap<>();
-    private static final String ENTER_YOUR_CHOICE = "Enter your choice: ";
-    private static final String INVALID_CHOICE = "Invalid choice. Please try again.";
-    private static final String USER_NOT_FOUND = "User not found.";
-    private static final String NO_PROGRAMS_FOUND = "No programs found";
-    private static final String ACTIVE = "active";
-    private static final String ENTER_YOUR_EMAIL = "Enter your email:";
-
+	  private static final Logger logger = LoggerFactory.getLogger(MainMenu.class);
+	    private static UserService userService = new UserService();
+	    private static ProgramService programService = new ProgramService();
+	    private static ClientProfileService clientProfileService = new ClientProfileService();
+	    private static Map<String, Integer> activityData = new HashMap<>();
+	    private static final String ENTER_YOUR_CHOICE = "Enter your choice: ";
+	    private static final String INVALID_CHOICE = "Invalid choice. Please try again.";
+	    private static final String USER_NOT_FOUND = "User not found.";
+	    private static final String NO_PROGRAMS_FOUND = "No programs found";
+	    private static final String ACTIVE = "active";
+	    private static final String ENTER_YOUR_EMAIL = "Enter your email:";
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
 
-        // Load users from persistent storage
-        List<User> loadedUsers = PersistenceUtil.loadUserData();
-        loadedUsers.forEach(userService::addUser);
+        
+        loadAllData();
 
-        // Load programs from persistent storage
-        List<Program> loadedPrograms = PersistenceUtil.loadProgramData();
-        loadedPrograms.forEach(programService::addProgram);
-
+        
         while (!exit) {
-            try {
-                logger.info("\n=== Main Menu ===");
-                logger.info("1. Admin Menu");
-                logger.info("2. Instructor Menu");
-                logger.info("3. Client Menu");
-                logger.info("4. Exit");
-                logger.info(ENTER_YOUR_CHOICE);
-                int choice = scanner.nextInt();
-                scanner.nextLine();
-
-                switch (choice) {
-                    case 1:
-                        manageAdminMenu(scanner);
-                        break;
-                    case 2:
-                        manageInstructorMenu(scanner);
-                        break;
-                    case 3:
-                        manageClientMenu(scanner);
-                        break;
-                    case 4:
-                        saveAllData();
-                        logger.info("Exiting the system...");
-                        exit = true;
-                        break;
-                    default:
-                        logger.warn(INVALID_CHOICE);
-                }
-            } catch (Exception e) {
-                logger.error("Invalid input. Please enter a valid number.", e);
-                scanner.nextLine();
-            }
+            exit = handleMenu(scanner, "\n=== Main Menu ===",
+                List.of("Admin Menu", "Instructor Menu", "Client Menu", "Exit"),
+                choice -> {
+                    switch (choice) {
+                        case 1 -> manageAdminMenu(scanner);
+                        case 2 -> manageInstructorMenu(scanner);
+                        case 3 -> manageClientMenu(scanner);
+                        case 4 -> {
+                            saveAllData();
+                            logger.info("Exiting the system...");
+                            return true;
+                        }
+                        default -> logger.warn(INVALID_CHOICE);
+                    }
+                    return false;
+                });
         }
         scanner.close();
     }
-        
-        private static void manageAdminMenu(Scanner scanner) {
-            boolean back = false;
-            while (!back) {
-            	logger.info("\n=== Admin Menu ===");
-                logger.info("1. User Management");
-                logger.info("2. Program Monitoring Menu");
-                logger.info("3. Back to Main Menu");
-                logger.info(ENTER_YOUR_CHOICE); 
-                int choice = scanner.nextInt();
-                scanner.nextLine();
 
-                switch (choice) {
-                    case 1:
-                        manageUserAccountsMenu(scanner); 
-                        break;
-                    case 2:
-                        manageProgramMonitoringMenu(scanner); 
-                        break;
-                    case 3:
-                        back = true;
-                        break;
-                    default:
-                    	logger.warn(INVALID_CHOICE);
-                }
+    private static boolean handleMenu(Scanner scanner, String menuTitle, List<String> options, Function<Integer, Boolean> menuHandler) {
+        boolean exit = false;
+        while (!exit) {
+            logger.info(menuTitle);
+            for (int i = 0; i < options.size(); i++) {
+                logger.info("{}. {}", i + 1, options.get(i));
             }
+            logger.info(ENTER_YOUR_CHOICE);
+
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine(); 
+
+                if (choice < 1 || choice > options.size()) {
+                    logger.warn(INVALID_CHOICE);
+                } else {
+                    exit = menuHandler.apply(choice); 
+                }
+            } catch (Exception e) {
+                logger.error("Invalid input. Please enter a valid number.", e);
+                scanner.nextLine(); 
+            }
+        }
+        return exit;
+    }
+
+    
+    private static void loadAllData() {
+        logger.info("Loading all data...");
+
+        
+        List<User> loadedUsers = PersistenceUtil.loadUserData();
+        if (loadedUsers.isEmpty()) {
+            logger.warn("No users found in persistent storage.");
+        } else {
+            loadedUsers.forEach(userService::addUser);
+            logger.info("Loaded {} users from persistent storage.", loadedUsers.size());
         }
 
         
-        private static void manageUserAccountsMenu(Scanner scanner) {
-            boolean back = false;
-            while (!back) {
-                logger.info("\n=== User Management Menu ===");
-                logger.info("1. Add User");
-                logger.info("2. Update User");
-                logger.info("3. Deactivate User");
-                logger.info("4. Approve Instructor");
-                logger.info("5. View User Activity Statistics");
-                logger.info("6. View All Users with Status");
-                logger.info("7. Back to Admin Menu");
-                logger.info(ENTER_YOUR_CHOICE); 
-                int choice = scanner.nextInt();
-                scanner.nextLine();
-
-                switch (choice) {
-                    case 1:
-                        addUser(scanner);
-                        break;
-                    case 2:
-                        updateUser(scanner);
-                        break;
-                    case 3:
-                        deactivateUser(scanner);
-                        break;
-                    case 4:
-                        approveInstructor(scanner);
-                        break;
-                    case 5:
-                        viewUserActivity();
-                        break;
-                    case 6:
-                        viewAllUsersWithStatus();
-                        break;
-                    case 7:
-                        back = true;
-                        break;
-                    default:
-                    	logger.warn(INVALID_CHOICE);
-                }
-            }
+        List<Program> loadedPrograms = PersistenceUtil.loadProgramData();
+        if (loadedPrograms.isEmpty()) {
+            logger.warn("No programs found in persistent storage.");
+        } else {
+            loadedPrograms.forEach(programService::addProgram);
+            logger.info("Loaded {} programs from persistent storage.", loadedPrograms.size());
         }
+    }
+
+
+    private static void manageAdminMenu(Scanner scanner) {
+        handleMenu(scanner, "\n=== Admin Menu ===",
+            List.of("User Management", "Program Monitoring Menu", "Back to Main Menu"),
+            choice -> {
+                switch (choice) {
+                    case 1 -> manageUserAccountsMenu(scanner);
+                    case 2 -> manageProgramMonitoringMenu(scanner);
+                    case 3 -> {
+                        return true;
+                    }
+                    default -> logger.warn(INVALID_CHOICE);
+                }
+                return false;
+            });
+    }
+
 
         
-        private static void manageProgramMonitoringMenu(Scanner scanner) {
-            boolean back = false;
-            while (!back) {
-                logger.info("\n=== Program Monitoring Menu ===");
-                logger.info("1. View Most Popular Programs by Enrollment");
-                logger.info("2. Generate Revenue Report");
-                logger.info("3. Generate Attendance Report");
-                logger.info("4. Generate Client Progress Report");
-                logger.info("5. View Active and Completed Programs");
-                logger.info("6. Back to Admin Menu");
-                logger.info(ENTER_YOUR_CHOICE); 
-                int choice = scanner.nextInt();
-                scanner.nextLine();
-
+    private static void manageUserAccountsMenu(Scanner scanner) {
+        handleMenu(
+            scanner,
+            "\n=== User Management Menu ===",
+            List.of(
+                "Add User",
+                "Update User",
+                "Deactivate User",
+                "Approve Instructor",
+                "View User Activity Statistics",
+                "View All Users with Status",
+                "Back to Admin Menu"
+            ),
+            choice -> {
                 switch (choice) {
-                    case 1:
-                        viewMostPopularPrograms();
-                        break;
-                    case 2:
-                        generateRevenueReport();
-                        break;
-                    case 3:
-                        generateAttendanceReport();
-                        break;
-                    case 4:
-                        generateClientProgressReport();
-                        break;
-                    case 5:
-                        viewActiveAndCompletedPrograms();
-                        break;
-                    case 6:
-                        back = true;
-                        break;
-                    default:
-                    	logger.warn(INVALID_CHOICE);
+                    case 1 -> addUser(scanner);
+                    case 2 -> updateUser(scanner);
+                    case 3 -> deactivateUser(scanner);
+                    case 4 -> approveInstructor(scanner);
+                    case 5 -> viewUserActivity();
+                    case 6 -> viewAllUsersWithStatus();
+                    case 7 -> {
+                        return true; 
+                    }
+                    default -> logger.warn(INVALID_CHOICE);
                 }
+                return false; 
             }
-        }
+        );
+    }
+
+        
+    private static void manageProgramMonitoringMenu(Scanner scanner) {
+        handleMenu(
+            scanner,
+            "\n=== Program Monitoring Menu ===",
+            List.of(
+                "View Most Popular Programs by Enrollment",
+                "Generate Revenue Report",
+                "Generate Attendance Report",
+                "Generate Client Progress Report",
+                "View Active and Completed Programs",
+                "Back to Admin Menu"
+            ),
+            choice -> {
+                switch (choice) {
+                    case 1 -> viewMostPopularPrograms();
+                    case 2 -> generateRevenueReport();
+                    case 3 -> generateAttendanceReport();
+                    case 4 -> generateClientProgressReport();
+                    case 5 -> viewActiveAndCompletedPrograms();
+                    case 6 -> {
+                        return true; 
+                    }
+                    default -> logger.warn(INVALID_CHOICE);
+                }
+                return false; 
+            }
+        );
+    }
 
         
         private static void manageInstructorMenu(Scanner scanner) {
-            boolean back = false;
-            while (!back) {
-                logger.info("\n=== Instructor Menu ===");
-                logger.info("1. Create Program");
-                logger.info("2. Update Program");
-                logger.info("3. Delete Program");
-                logger.info("4. View All Programs");
-                logger.info("5. Back to Main Menu");
-                logger.info(ENTER_YOUR_CHOICE); 
-                int choice = scanner.nextInt();
-                scanner.nextLine();
-
-                switch (choice) {
-                    case 1:
-                        createProgram(scanner);
-                        break;
-                    case 2:
-                        updateProgram(scanner);
-                        break;
-                    case 3:
-                        deleteProgram(scanner);
-                        break;
-                    case 4:
-                        viewAllPrograms();
-                        break;
-                    case 5:
-                        back = true;
-                        break;
-                    default:
-                    	logger.warn(INVALID_CHOICE);
-                }
-            }
+            handleMenu(scanner, "\n=== Instructor Menu ===",
+                List.of("Create Program", "Update Program", "Delete Program", "View All Programs", "Back to Main Menu"),
+                choice -> {
+                    switch (choice) {
+                        case 1 -> createProgram(scanner);
+                        case 2 -> updateProgram(scanner);
+                        case 3 -> deleteProgram(scanner);
+                        case 4 -> viewAllPrograms();
+                        case 5 -> {
+                            return true;
+                        }
+                        default -> logger.warn(INVALID_CHOICE);
+                    }
+                    return false;
+                });
         }
 
       
 
         private static void manageClientMenu(Scanner scanner) {
-            boolean back = false;
-            while (!back) {
-                logger.info("\n=== Client Menu ===");
-                logger.info("1. Manage Client Profile");
-                logger.info("2. Back to Main Menu");
-                logger.info(ENTER_YOUR_CHOICE); 
-                int choice = scanner.nextInt();
-                scanner.nextLine();
-
-                switch (choice) {
-                    case 1:
-                        manageClientProfile(scanner); 
-                        break;
-                    case 2:
-                        back = true;
-                        break;
-                    default:
-                    	logger.warn(INVALID_CHOICE);
-                }
-            }
+            handleMenu(scanner, "\n=== Client Menu ===",
+                List.of("Manage Client Profile", "Back to Main Menu"),
+                choice -> {
+                    switch (choice) {
+                        case 1 -> manageClientProfile(scanner);
+                        case 2 -> {
+                            return true;
+                        }
+                        default -> logger.warn(INVALID_CHOICE);
+                    }
+                    return false;
+                });
         }
 
 
         private static void manageClientProfile(Scanner scanner) {
-            boolean back = false;
-            while (!back) {
-                logger.info("\n=== Manage Client Profile Menu ===");
-                logger.info("1. Create Profile");
-                logger.info("2. View Profile");
-                logger.info("3. Update Profile");
-                logger.info("4. Delete Profile");
-                logger.info("5. Back to Client Menu");
-                logger.info(ENTER_YOUR_CHOICE); 
-                int choice = scanner.nextInt();
-                scanner.nextLine();
-
-                switch (choice) {
-                    case 1:
-                        createClientProfile(scanner);
-                        break;
-                    case 2:
-                        viewClientProfile(scanner);
-                        break;
-                    case 3:
-                        updateClientProfile(scanner);
-                        break;
-                    case 4:
-                        deleteClientProfile(scanner);
-                        break;
-                    case 5:
-                        back = true;
-                        break;
-                    default:
-                    	logger.warn(INVALID_CHOICE);
+            handleMenu(
+                scanner,
+                "\n=== Manage Client Profile Menu ===",
+                List.of(
+                    "Create Profile",
+                    "View Profile",
+                    "Update Profile",
+                    "Delete Profile",
+                    "Back to Client Menu"
+                ),
+                choice -> {
+                    switch (choice) {
+                        case 1 -> createClientProfile(scanner);
+                        case 2 -> viewClientProfile(scanner);
+                        case 3 -> updateClientProfile(scanner);
+                        case 4 -> deleteClientProfile(scanner);
+                        case 5 -> {
+                            return true; 
+                        }
+                        default -> logger.warn(INVALID_CHOICE);
+                    }
+                    return false; 
                 }
-            }
+            );
         }
-
 
         private static void saveAllData() {
             PersistenceUtil.saveUserData(new ArrayList<>(userService.getAllUsers()));

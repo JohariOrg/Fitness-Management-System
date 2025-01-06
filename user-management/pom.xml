@@ -72,7 +72,22 @@
   
   <build>
     <plugins>
-      <!-- Ensure you use at least version 3.8.1 or newer for Java 17 -->
+    
+    
+     <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.8.8</version> <!-- Use the latest version -->
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>prepare-agent</goal> <!-- Enable coverage collection -->
+                        <goal>report</goal>       <!-- Generate the coverage report -->
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+  
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -86,3 +101,4 @@
     </plugins>
   </build>
 </project>
+

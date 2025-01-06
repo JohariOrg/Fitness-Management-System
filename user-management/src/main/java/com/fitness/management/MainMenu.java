@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,11 +27,15 @@ import org.slf4j.LoggerFactory;
             Scanner scanner = new Scanner(System.in);
             boolean exit = false;
 
-            
+            // Load users
             List<User> loadedUsers = PersistenceUtil.loadUserData();
             loadedUsers.forEach(userService::addUser);
 
-            List<Program> loadedPrograms = PersistenceUtil.loadProgramData();
+            // Load programs
+            List<ProgramDetails> programDetailsList = PersistenceUtil.loadProgramData();
+            List<Program> loadedPrograms = programDetailsList.stream()
+                    .map(programDetails -> new Program(programDetails)) // Convert ProgramDetails to Program
+                    .collect(Collectors.toList());
             loadedPrograms.forEach(programService::addProgram);
 
             while (!exit) {
@@ -39,7 +45,7 @@ import org.slf4j.LoggerFactory;
                     logger.info("2. Instructor Menu");
                     logger.info("3. Client Menu");
                     logger.info("4. Exit");
-                    logger.info(ENTER_YOUR_CHOICE); 
+                    logger.info(ENTER_YOUR_CHOICE);
                     int choice = scanner.nextInt();
                     scanner.nextLine();
 
@@ -59,7 +65,7 @@ import org.slf4j.LoggerFactory;
                             exit = true;
                             break;
                         default:
-                        	logger.warn(INVALID_CHOICE);
+                            logger.warn(INVALID_CHOICE);
                     }
                 } catch (Exception e) {
                     logger.error("Invalid input. Please enter a valid number.", e);
@@ -68,7 +74,6 @@ import org.slf4j.LoggerFactory;
             }
             scanner.close();
         }
-
         
         private static void manageAdminMenu(Scanner scanner) {
             boolean back = false;
@@ -282,10 +287,25 @@ import org.slf4j.LoggerFactory;
 
     
 
-	private static void saveAllData() {
-        PersistenceUtil.saveUserData(new ArrayList<>(userService.getAllUsers()));
-        PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms()));
-    }
+        private static void saveAllData() {
+            // Convert List<Program> to List<ProgramDetails>
+            List<ProgramDetails> programDetailsList = programService.getAllPrograms().stream()
+                .map(program -> new ProgramDetails.Builder()
+                    .setTitle(program.getTitle())
+                    .setDuration(program.getDuration())
+                    .setDifficulty(program.getDifficulty())
+                    .setGoals(program.getGoals())
+                    .setPrice(program.getPrice())
+                    .setSchedule(program.getSchedule())
+                    .setVideos(program.getVideos())
+                    .setDocuments(program.getDocuments())
+                    .build())
+                .collect(Collectors.toList());
+
+            // Save user and program data
+            PersistenceUtil.saveUserData(new ArrayList<>(userService.getAllUsers()));
+            PersistenceUtil.saveProgramData(new ArrayList<>(programDetailsList));
+        }
 
 
 
@@ -362,9 +382,9 @@ import org.slf4j.LoggerFactory;
         if (activityData.isEmpty()) {
             logger.info("No activity data available.");
         } else {
-            activityData.forEach((email, activityCount) -> {
-                logger.info("Email: {}, Activity Count: {}", email, activityCount);
-            });
+            activityData.forEach((email, activityCount) -> 
+                logger.info("Email: {}, Activity Count: {}", email, activityCount)
+            );
         }
     }
 
@@ -437,7 +457,6 @@ import org.slf4j.LoggerFactory;
 
 
     private static void createProgram(Scanner scanner) {
-        
         logger.info("Enter Program Title: ");
         String title = scanner.nextLine().trim();
 
@@ -452,7 +471,7 @@ import org.slf4j.LoggerFactory;
 
         logger.info("Enter Price: ");
         double price = scanner.nextDouble();
-        scanner.nextLine(); 
+        scanner.nextLine();
 
         logger.info("Enter Schedule (e.g., Online/In-Person): ");
         String schedule = scanner.nextLine().trim();
@@ -463,20 +482,35 @@ import org.slf4j.LoggerFactory;
         logger.info("Enter Documents (comma-separated): ");
         List<String> documents = List.of(scanner.nextLine().split(","));
 
-        
+        // Build the Program object
         Program program = new Program.Builder(title)
-            .setDuration(duration)
-            .setDifficulty(difficulty)
-            .setGoals(goals)
-            .setPrice(price)
-            .setSchedule(schedule)
-            .setVideos(videos)
-            .setDocuments(documents)
-            .build();
+                .setDuration(duration)
+                .setDifficulty(difficulty)
+                .setGoals(goals)
+                .setPrice(price)
+                .setSchedule(schedule)
+                .setVideos(videos)
+                .setDocuments(documents)
+                .build();
 
-        
+        // Add the program to the service
         if (programService.addProgram(program)) {
-            PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms()));
+            // Convert List<Program> to List<ProgramDetails>
+            List<ProgramDetails> programDetailsList = programService.getAllPrograms().stream()
+                    .map(prog -> new ProgramDetails.Builder()
+                            .setTitle(prog.getTitle())
+                            .setDuration(prog.getDuration())
+                            .setDifficulty(prog.getDifficulty())
+                            .setGoals(prog.getGoals())
+                            .setPrice(prog.getPrice())
+                            .setSchedule(prog.getSchedule())
+                            .setVideos(prog.getVideos())
+                            .setDocuments(prog.getDocuments())
+                            .build())
+                    .collect(Collectors.toList());
+
+            // Save the program data
+            PersistenceUtil.saveProgramData(new ArrayList<>(programDetailsList));
             logger.info("Program created successfully.");
         } else {
             logger.warn("Failed to create program. A program with this title may already exist.");
@@ -499,30 +533,51 @@ import org.slf4j.LoggerFactory;
 
         logger.info("Enter New Price: ");
         double price = scanner.nextDouble();
-        scanner.nextLine(); 
+        scanner.nextLine();
 
         logger.info("Enter New Schedule: ");
         String schedule = scanner.nextLine().trim();
 
         logger.info("Enter New Video Tutorials (comma-separated): ");
         List<String> videos = List.of(scanner.nextLine().split(",")).stream()
-                                  .map(String::trim) 
+                                  .map(String::trim)
                                   .toList();
 
         logger.info("Enter New Documents (comma-separated): ");
         List<String> documents = List.of(scanner.nextLine().split(",")).stream()
-                                     .map(String::trim) 
+                                     .map(String::trim)
                                      .toList();
 
-        
-        ProgramDetails programDetails = new ProgramDetails(
-            title, duration, difficulty, goals, price, schedule, videos, documents
-        );
+        // Use the Builder to create a new ProgramDetails instance
+        ProgramDetails programDetails = new ProgramDetails.Builder()
+            .setTitle(title)
+            .setDuration(duration)
+            .setDifficulty(difficulty)
+            .setGoals(goals)
+            .setPrice(price)
+            .setSchedule(schedule)
+            .setVideos(videos)
+            .setDocuments(documents)
+            .build();
 
-        
+        // Call the update service
         if (programService.updateProgram(programDetails)) {
-            
-            PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms()));
+            // Convert List<Program> to List<ProgramDetails>
+            List<ProgramDetails> programDetailsList = programService.getAllPrograms().stream()
+                .map(program -> new ProgramDetails.Builder()
+                    .setTitle(program.getTitle())
+                    .setDuration(program.getDuration())
+                    .setDifficulty(program.getDifficulty())
+                    .setGoals(program.getGoals())
+                    .setPrice(program.getPrice())
+                    .setSchedule(program.getSchedule())
+                    .setVideos(program.getVideos())
+                    .setDocuments(program.getDocuments())
+                    .build())
+                .toList();
+
+            // Save updated program data
+            PersistenceUtil.saveProgramData(new ArrayList<>(programDetailsList));
             logger.info("Program updated successfully.");
         } else {
             logger.warn("Failed to update program. Program may not exist.");
@@ -530,17 +585,34 @@ import org.slf4j.LoggerFactory;
     }
 
 
+
     private static void deleteProgram(Scanner scanner) {
         logger.info("Enter Program Title to Delete: ");
         String title = scanner.nextLine();
 
         if (programService.deleteProgram(title)) {
-            PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms()));
+            // Convert List<Program> to List<ProgramDetails>
+            List<ProgramDetails> programDetailsList = programService.getAllPrograms().stream()
+                .map(program -> new ProgramDetails.Builder()
+                    .setTitle(program.getTitle())
+                    .setDuration(program.getDuration())
+                    .setDifficulty(program.getDifficulty())
+                    .setGoals(program.getGoals())
+                    .setPrice(program.getPrice())
+                    .setSchedule(program.getSchedule())
+                    .setVideos(program.getVideos())
+                    .setDocuments(program.getDocuments())
+                    .build())
+                .toList();
+
+            // Save updated program data
+            PersistenceUtil.saveProgramData(new ArrayList<>(programDetailsList));
             logger.info("Program deleted successfully.");
         } else {
             logger.warn("Failed to delete program. Program may not exist.");
         }
     }
+
 
     private static void viewAllPrograms() {
         List<Program> programs = programService.getAllPrograms();
@@ -653,7 +725,7 @@ import org.slf4j.LoggerFactory;
         }
     }
 
-    private static void updateClientProfile(Scanner scanner) {
+    private static void updateClientProfile(Scanner scanner) { 
         logger.info("\n=== Update Client Profile ===");
         logger.info(ENTER_YOUR_EMAIL);
         String email = scanner.nextLine();
@@ -665,7 +737,7 @@ import org.slf4j.LoggerFactory;
             profile.setName(getUpdatedInput(scanner, "Name", profile.getName()));
 
             while (true) {
-                logger.info("Enter New Age (" + profile.getAge() + "): ");
+                logger.info("Enter New Age ({}): ", profile.getAge());
                 String ageInput = scanner.nextLine();
 
                 if (!ageInput.trim().isEmpty()) {
@@ -699,6 +771,9 @@ import org.slf4j.LoggerFactory;
         }
     }
 
+    
+
+
     private static void deleteClientProfile(Scanner scanner) {
         logger.info("\n=== Delete Client Profile ===");
         logger.info(ENTER_YOUR_EMAIL);
@@ -715,7 +790,7 @@ import org.slf4j.LoggerFactory;
     }
 
     private static String getUpdatedInput(Scanner scanner, String field, String currentValue) {
-        logger.info("Enter New " + field + " (" + currentValue + "): ");
+        logger.info("Enter New {} ({}): ", field, currentValue);
         return scanner.nextLine();
     }
 }

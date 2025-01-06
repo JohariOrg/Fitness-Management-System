@@ -19,6 +19,21 @@ public class Program implements Serializable {
     private String progressSummary;
     private boolean isActive;
 
+    // Constructor to create a Program from a ProgramDetails object
+    public Program(ProgramDetails programDetails) {
+        this.title = programDetails.getTitle();
+        this.duration = programDetails.getDuration();
+        this.difficulty = programDetails.getDifficulty();
+        this.goals = programDetails.getGoals();
+        this.price = programDetails.getPrice();
+        this.schedule = programDetails.getSchedule();
+        this.videos = programDetails.getVideos();
+        this.documents = programDetails.getDocuments();
+        this.enrollment = 0; // Default value, update as needed
+        this.progressSummary = ""; // Default value, update as needed
+        this.isActive = true; // Default value, update as needed
+    }
+
     // Private Constructor (Used by the Builder)
     private Program(Builder builder) {
         this.title = builder.title;

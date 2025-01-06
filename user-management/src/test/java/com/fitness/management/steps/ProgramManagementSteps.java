@@ -63,33 +63,35 @@ public class ProgramManagementSteps {
         assertNotNull("The program with title " + title + " should exist in the system", existingProgram);
     }
 
-    @When("the instructor updates the program titled {string} with:") 
+    @When("the instructor updates the program titled {string} with:")
     public void the_instructor_updates_the_program_titled_with(String title, DataTable dataTable) {
-        
         Map<String, String> data = dataTable.asMap(String.class, String.class);
 
         
         List<String> videos = List.of(data.get("videos").split(", ")).stream()
-                                  .map(String::trim) 
+                                  .map(String::trim)
                                   .toList();
         List<String> documents = List.of(data.get("documents").split(", ")).stream()
-                                     .map(String::trim) 
+                                     .map(String::trim)
                                      .toList();
 
         
-        ProgramDetails programDetails = new ProgramDetails(
-            title.trim(),
-            data.get("duration").trim(),
-            data.get("difficulty").trim(),
-            data.get("goals").trim(),
-            Double.parseDouble(data.get("price").trim()),
-            data.get("schedule").trim(),
-            videos,
-            documents
-        );
+        ProgramDetails programDetails = new ProgramDetails.Builder()
+            .setTitle(title.trim())
+            .setDuration(data.get("duration").trim())
+            .setDifficulty(data.get("difficulty").trim())
+            .setGoals(data.get("goals").trim())
+            .setPrice(Double.parseDouble(data.get("price").trim()))
+            .setSchedule(data.get("schedule").trim())
+            .setVideos(videos)
+            .setDocuments(documents)
+            .build();
+
         
         boolean updated = programService.updateProgram(programDetails);
         assertTrue("Program should be updated successfully", updated);
+
+        
         currentProgram = programService.getProgram(title.trim());
     }
 

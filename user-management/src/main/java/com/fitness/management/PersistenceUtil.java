@@ -3,13 +3,15 @@ package com.fitness.management;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PersistenceUtil {
 
+    private static final Logger logger = LoggerFactory.getLogger(PersistenceUtil.class); // Add logger
     private static final String USERS_FILE = "users_data.txt";
     private static final String PROGRAMS_FILE = "programs.dat";
 
-    
     public static void saveUserData(List<User> users) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(USERS_FILE))) {
             for (User user : users) {
@@ -17,13 +19,12 @@ public class PersistenceUtil {
                 writer.write(user.getName() + "," + user.getEmail() + "," + user.getRole() + "," + status);
                 writer.newLine();
             }
-            System.out.println("User data saved successfully.");
+            logger.info("User data saved successfully."); // Replaced System.out.println
         } catch (IOException e) {
-            System.out.println("Error saving user data: " + e.getMessage());
+            logger.error("Error saving user data: {}", e.getMessage()); // Replaced System.out.println
         }
     }
 
-   
     public static List<User> loadUserData() {
         List<User> users = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(USERS_FILE))) {
@@ -39,22 +40,22 @@ public class PersistenceUtil {
                 }
             }
         } catch (FileNotFoundException e) {
-            System.out.println("User data file not found. Initializing empty data.");
+            logger.warn("User data file not found. Initializing empty data."); // Replaced System.out.println
         } catch (IOException e) {
-            System.out.println("Error loading user data: " + e.getMessage());
+            logger.error("Error loading user data: {}", e.getMessage()); // Replaced System.out.println
         }
         return users;
     }
+
     public static void saveProgramData(List<Program> programs) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(PROGRAMS_FILE))) {
             oos.writeObject(programs);
-           // System.out.println("Programs Data saved successfully.");
+            logger.info("Programs data saved successfully."); // Uncommented and replaced System.out.println
         } catch (IOException e) {
-            System.err.println("Error saving programs: " + e.getMessage());
+            logger.error("Error saving programs: {}", e.getMessage()); // Replaced System.err.println
         }
     }
 
-   
     @SuppressWarnings("unchecked")
     public static List<Program> loadProgramData() {
         File file = new File(PROGRAMS_FILE);
@@ -64,22 +65,19 @@ public class PersistenceUtil {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             return (List<Program>) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error loading programs: " + e.getMessage());
+            logger.error("Error loading programs: {}", e.getMessage()); // Replaced System.err.println
             return new ArrayList<>();
         }
     }
 
-
-    
     public static void saveClientProfileData(List<Profile> profiles) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("client_profiles.dat"))) {
             oos.writeObject(profiles);
-            System.out.println("Client profiles saved successfully.");
+            logger.info("Client profiles saved successfully."); // Replaced System.out.println
         } catch (IOException e) {
-            System.out.println("Error saving client profiles: " + e.getMessage());
+            logger.error("Error saving client profiles: {}", e.getMessage()); // Replaced System.out.println
         }
     }
-
 
     @SuppressWarnings("unchecked")
     public static List<Profile> loadClientProfileDataList() {
@@ -93,23 +91,23 @@ public class PersistenceUtil {
             if (obj instanceof List) { // Ensure it is a List
                 return (List<Profile>) obj; // Cast safely after checking
             } else {
-                System.out.println("Error: Invalid data format in file.");
+                logger.error("Error: Invalid data format in file."); // Replaced System.out.println
                 return new ArrayList<>(); // Return an empty list if data is invalid
             }
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Error loading client profiles: " + e.getMessage());
+            logger.error("Error loading client profiles: {}", e.getMessage()); // Replaced System.out.println
             return new ArrayList<>(); // Return an empty list in case of an exception
         }
     }
 
-
     public static void deleteClientProfileData() {
         File file = new File("client_profile.dat");
         if (file.exists()) {
-            file.delete();
+            if (file.delete()) {
+                logger.info("Client profile data deleted successfully."); // Added logging for successful deletion
+            } else {
+                logger.error("Failed to delete client profile data."); // Added logging for failed deletion
+            }
         }
     }
-
-
-
 }

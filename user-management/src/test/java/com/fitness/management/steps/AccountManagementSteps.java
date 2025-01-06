@@ -88,8 +88,7 @@ public class AccountManagementSteps {
             currentClientEmail,
             updatedData.get("Fitness Goals"),
             updatedData.get("Dietary Preferences"),
-            updatedData.get("Dietary Restrictions"),
-            userService
+            updatedData.get("Dietary Restrictions")
         );
 
         createdProfile = clientProfileService.viewProfile(currentClientEmail);

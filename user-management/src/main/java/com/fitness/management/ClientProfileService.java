@@ -52,7 +52,7 @@ public class ClientProfileService {
         }
     }
 
-    public void updateProfile(String name, int age, String email, String fitnessGoals, String dietaryPreferences, String dietaryRestrictions, UserService userService) {
+    public void updateProfile(String name, int age, String email, String fitnessGoals, String dietaryPreferences, String dietaryRestrictions) {
         if (profile == null) {
             throw new IllegalStateException("No profile exists to update.");
         }

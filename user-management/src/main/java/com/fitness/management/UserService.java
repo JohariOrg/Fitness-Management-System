@@ -2,19 +2,25 @@ package com.fitness.management;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 
 
 public class UserService {
 	private Map<String, User> users = new HashMap<>();
+	 private static final Logger logger = LoggerFactory.getLogger(UserService.class); // Logger definition
 	
-	public boolean addUser(User user) {
-	    if (users.containsKey(user.getEmail())) {
-	        System.out.println("User with this email already exists.");
-	        return false;
+	 public boolean addUser(User user) {
+	        if (users.containsKey(user.getEmail())) {
+	            logger.warn("User with this email already exists: {}", user.getEmail()); // Replacing System.out.println
+	            return false;
+	        }
+	        users.put(user.getEmail(), user);
+	        logger.info("User added successfully: {}", user.getEmail()); // Optional: Log user addition
+	        return true;
 	    }
-	    users.put(user.getEmail(), user);
-	    return true;
-	}
 
 
 	

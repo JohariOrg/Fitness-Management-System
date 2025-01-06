@@ -1,5 +1,4 @@
 package com.fitness.management.steps;
-import com.fitness.management.ProgramDetails;
 import com.fitness.management.Program;
 import com.fitness.management.ProgramService;
 import io.cucumber.datatable.DataTable;
@@ -63,11 +62,10 @@ public class ProgramManagementSteps {
         assertNotNull("The program with title " + title + " should exist in the system", existingProgram);
     }
 
-    @When("the instructor updates the program titled {string} with:")
+    @When("the instructor updates the program titled {string} with:") 
     public void the_instructor_updates_the_program_titled_with(String title, DataTable dataTable) {
         Map<String, String> data = dataTable.asMap(String.class, String.class);
 
-        
         List<String> videos = List.of(data.get("videos").split(", ")).stream()
                                   .map(String::trim)
                                   .toList();
@@ -76,8 +74,7 @@ public class ProgramManagementSteps {
                                      .toList();
 
         
-        ProgramDetails programDetails = new ProgramDetails.Builder()
-            .setTitle(title.trim())
+        Program updatedProgram = new Program.Builder(title.trim())
             .setDuration(data.get("duration").trim())
             .setDifficulty(data.get("difficulty").trim())
             .setGoals(data.get("goals").trim())
@@ -88,7 +85,7 @@ public class ProgramManagementSteps {
             .build();
 
         
-        boolean updated = programService.updateProgram(programDetails);
+        boolean updated = programService.updateProgram(updatedProgram);
         assertTrue("Program should be updated successfully", updated);
 
         

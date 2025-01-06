@@ -18,30 +18,31 @@ public class ProgramService {
         return true;
     }
 
-    public boolean updateProgram(ProgramDetails programDetails) {
+    public boolean updateProgram(Program updatedProgram) {
         
-        Program existingProgram = programs.get(programDetails.getTitle().trim());
+        Program existingProgram = programs.get(updatedProgram.getTitle().trim());
         if (existingProgram == null) {
             return false; 
         }
 
-        Program updatedProgram = new Program.Builder(programDetails.getTitle().trim())
-            .setDuration(programDetails.getDuration())
-            .setDifficulty(programDetails.getDifficulty())
-            .setGoals(programDetails.getGoals())
-            .setPrice(programDetails.getPrice())
-            .setSchedule(programDetails.getSchedule())
-            .setVideos(programDetails.getVideos())
-            .setDocuments(programDetails.getDocuments())
+        // Create a new Program instance with updated values while preserving certain existing fields
+        Program mergedProgram = new Program.Builder(updatedProgram.getTitle().trim())
+            .setDuration(updatedProgram.getDuration())
+            .setDifficulty(updatedProgram.getDifficulty())
+            .setGoals(updatedProgram.getGoals())
+            .setPrice(updatedProgram.getPrice())
+            .setSchedule(updatedProgram.getSchedule())
+            .setVideos(updatedProgram.getVideos())
+            .setDocuments(updatedProgram.getDocuments())
             .setEnrollment(existingProgram.getEnrollment()) 
             .setProgressSummary(existingProgram.getProgressSummary()) 
             .setIsActive(existingProgram.isActive()) 
             .build();
 
         
-        programs.put(updatedProgram.getTitle(), updatedProgram);
+        programs.put(mergedProgram.getTitle(), mergedProgram);
 
-        return true;
+        return true; 
     }
 
 

@@ -6,7 +6,6 @@ import java.util.List;
 public class Program implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    // Fields
     private String title;
     private String duration;
     private String difficulty;
@@ -19,22 +18,7 @@ public class Program implements Serializable {
     private String progressSummary;
     private boolean isActive;
 
-    // Constructor to create a Program from a ProgramDetails object
-    public Program(ProgramDetails programDetails) {
-        this.title = programDetails.getTitle();
-        this.duration = programDetails.getDuration();
-        this.difficulty = programDetails.getDifficulty();
-        this.goals = programDetails.getGoals();
-        this.price = programDetails.getPrice();
-        this.schedule = programDetails.getSchedule();
-        this.videos = programDetails.getVideos();
-        this.documents = programDetails.getDocuments();
-        this.enrollment = 0; // Default value, update as needed
-        this.progressSummary = ""; // Default value, update as needed
-        this.isActive = true; // Default value, update as needed
-    }
-
-    // Private Constructor (Used by the Builder)
+    // Private Constructor for Builder
     private Program(Builder builder) {
         this.title = builder.title;
         this.duration = builder.duration;
@@ -49,7 +33,7 @@ public class Program implements Serializable {
         this.isActive = builder.isActive;
     }
 
-    // Getters for fields (optional, if needed)
+    // Getters
     public String getTitle() {
         return title;
     }
@@ -94,7 +78,7 @@ public class Program implements Serializable {
         return isActive;
     }
 
-    // Static Inner Builder Class
+    // Builder Class
     public static class Builder {
         private String title;
         private String duration;
@@ -104,16 +88,14 @@ public class Program implements Serializable {
         private String schedule;
         private List<String> videos;
         private List<String> documents;
-        private int enrollment = 0; // Default value
-        private String progressSummary = ""; // Default value
-        private boolean isActive = true; // Default value
+        private int enrollment = 0;
+        private String progressSummary = "";
+        private boolean isActive = true;
 
-        // Constructor for mandatory field(s)
         public Builder(String title) {
             this.title = title;
         }
 
-        // Setter Methods
         public Builder setDuration(String duration) {
             this.duration = duration;
             return this;
@@ -164,7 +146,6 @@ public class Program implements Serializable {
             return this;
         }
 
-        // Build Method to Create the Program Instance
         public Program build() {
             return new Program(this);
         }

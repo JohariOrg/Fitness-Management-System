@@ -10,70 +10,67 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-    public class MainMenu {
-        private static final Logger logger = LoggerFactory.getLogger(MainMenu.class);
-        private static UserService userService = new UserService();
-        private static ProgramService programService = new ProgramService();
-        private static ClientProfileService clientProfileService = new ClientProfileService();
-        private static Map<String, Integer> activityData = new HashMap<>();
-        private static final String ENTER_YOUR_CHOICE = "Enter your choice: ";
-        private static final String INVALID_CHOICE = "Invalid choice. Please try again.";
-        private static final String USER_NOT_FOUND = "User not found.";
-        private static final String NO_PROGRAMS_FOUND = "No programs found";
-        private static final String ACTIVE = "active";
-        private static final String ENTER_YOUR_EMAIL = "Enter your email:";
+public class MainMenu {
+    private static final Logger logger = LoggerFactory.getLogger(MainMenu.class);
+    private static UserService userService = new UserService();
+    private static ProgramService programService = new ProgramService();
+    private static ClientProfileService clientProfileService = new ClientProfileService();
+    private static Map<String, Integer> activityData = new HashMap<>();
+    private static final String ENTER_YOUR_CHOICE = "Enter your choice: ";
+    private static final String INVALID_CHOICE = "Invalid choice. Please try again.";
+    private static final String USER_NOT_FOUND = "User not found.";
+    private static final String NO_PROGRAMS_FOUND = "No programs found";
+    private static final String ACTIVE = "active";
+    private static final String ENTER_YOUR_EMAIL = "Enter your email:";
 
-        public static void main(String[] args) {
-            Scanner scanner = new Scanner(System.in);
-            boolean exit = false;
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
 
-            // Load users
-            List<User> loadedUsers = PersistenceUtil.loadUserData();
-            loadedUsers.forEach(userService::addUser);
+        // Load users from persistent storage
+        List<User> loadedUsers = PersistenceUtil.loadUserData();
+        loadedUsers.forEach(userService::addUser);
 
-            // Load programs
-            List<ProgramDetails> programDetailsList = PersistenceUtil.loadProgramData();
-            List<Program> loadedPrograms = programDetailsList.stream()
-                    .map(programDetails -> new Program(programDetails)) // Convert ProgramDetails to Program
-                    .collect(Collectors.toList());
-            loadedPrograms.forEach(programService::addProgram);
+        // Load programs from persistent storage
+        List<Program> loadedPrograms = PersistenceUtil.loadProgramData();
+        loadedPrograms.forEach(programService::addProgram);
 
-            while (!exit) {
-                try {
-                    logger.info("\n=== Main Menu ===");
-                    logger.info("1. Admin Menu");
-                    logger.info("2. Instructor Menu");
-                    logger.info("3. Client Menu");
-                    logger.info("4. Exit");
-                    logger.info(ENTER_YOUR_CHOICE);
-                    int choice = scanner.nextInt();
-                    scanner.nextLine();
+        while (!exit) {
+            try {
+                logger.info("\n=== Main Menu ===");
+                logger.info("1. Admin Menu");
+                logger.info("2. Instructor Menu");
+                logger.info("3. Client Menu");
+                logger.info("4. Exit");
+                logger.info(ENTER_YOUR_CHOICE);
+                int choice = scanner.nextInt();
+                scanner.nextLine();
 
-                    switch (choice) {
-                        case 1:
-                            manageAdminMenu(scanner);
-                            break;
-                        case 2:
-                            manageInstructorMenu(scanner);
-                            break;
-                        case 3:
-                            manageClientMenu(scanner);
-                            break;
-                        case 4:
-                            saveAllData();
-                            logger.info("Exiting the system...");
-                            exit = true;
-                            break;
-                        default:
-                            logger.warn(INVALID_CHOICE);
-                    }
-                } catch (Exception e) {
-                    logger.error("Invalid input. Please enter a valid number.", e);
-                    scanner.nextLine();
+                switch (choice) {
+                    case 1:
+                        manageAdminMenu(scanner);
+                        break;
+                    case 2:
+                        manageInstructorMenu(scanner);
+                        break;
+                    case 3:
+                        manageClientMenu(scanner);
+                        break;
+                    case 4:
+                        saveAllData();
+                        logger.info("Exiting the system...");
+                        exit = true;
+                        break;
+                    default:
+                        logger.warn(INVALID_CHOICE);
                 }
+            } catch (Exception e) {
+                logger.error("Invalid input. Please enter a valid number.", e);
+                scanner.nextLine();
             }
-            scanner.close();
         }
+        scanner.close();
+    }
         
         private static void manageAdminMenu(Scanner scanner) {
             boolean back = false;
@@ -283,28 +280,10 @@ import org.slf4j.LoggerFactory;
             }
         }
 
-    
-
-    
 
         private static void saveAllData() {
-            // Convert List<Program> to List<ProgramDetails>
-            List<ProgramDetails> programDetailsList = programService.getAllPrograms().stream()
-                .map(program -> new ProgramDetails.Builder()
-                    .setTitle(program.getTitle())
-                    .setDuration(program.getDuration())
-                    .setDifficulty(program.getDifficulty())
-                    .setGoals(program.getGoals())
-                    .setPrice(program.getPrice())
-                    .setSchedule(program.getSchedule())
-                    .setVideos(program.getVideos())
-                    .setDocuments(program.getDocuments())
-                    .build())
-                .collect(Collectors.toList());
-
-            // Save user and program data
             PersistenceUtil.saveUserData(new ArrayList<>(userService.getAllUsers()));
-            PersistenceUtil.saveProgramData(new ArrayList<>(programDetailsList));
+            PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms())); 
         }
 
 
@@ -482,40 +461,26 @@ import org.slf4j.LoggerFactory;
         logger.info("Enter Documents (comma-separated): ");
         List<String> documents = List.of(scanner.nextLine().split(","));
 
-        // Build the Program object
+        
         Program program = new Program.Builder(title)
-                .setDuration(duration)
-                .setDifficulty(difficulty)
-                .setGoals(goals)
-                .setPrice(price)
-                .setSchedule(schedule)
-                .setVideos(videos)
-                .setDocuments(documents)
-                .build();
+            .setDuration(duration)
+            .setDifficulty(difficulty)
+            .setGoals(goals)
+            .setPrice(price)
+            .setSchedule(schedule)
+            .setVideos(videos)
+            .setDocuments(documents)
+            .build();
 
-        // Add the program to the service
         if (programService.addProgram(program)) {
-            // Convert List<Program> to List<ProgramDetails>
-            List<ProgramDetails> programDetailsList = programService.getAllPrograms().stream()
-                    .map(prog -> new ProgramDetails.Builder()
-                            .setTitle(prog.getTitle())
-                            .setDuration(prog.getDuration())
-                            .setDifficulty(prog.getDifficulty())
-                            .setGoals(prog.getGoals())
-                            .setPrice(prog.getPrice())
-                            .setSchedule(prog.getSchedule())
-                            .setVideos(prog.getVideos())
-                            .setDocuments(prog.getDocuments())
-                            .build())
-                    .collect(Collectors.toList());
-
-            // Save the program data
-            PersistenceUtil.saveProgramData(new ArrayList<>(programDetailsList));
+            
+            PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms()));
             logger.info("Program created successfully.");
         } else {
             logger.warn("Failed to create program. A program with this title may already exist.");
         }
     }
+
 
 
     private static void updateProgram(Scanner scanner) {
@@ -548,9 +513,8 @@ import org.slf4j.LoggerFactory;
                                      .map(String::trim)
                                      .toList();
 
-        // Use the Builder to create a new ProgramDetails instance
-        ProgramDetails programDetails = new ProgramDetails.Builder()
-            .setTitle(title)
+        
+        Program updatedProgram = new Program.Builder(title)
             .setDuration(duration)
             .setDifficulty(difficulty)
             .setGoals(goals)
@@ -560,24 +524,9 @@ import org.slf4j.LoggerFactory;
             .setDocuments(documents)
             .build();
 
-        // Call the update service
-        if (programService.updateProgram(programDetails)) {
-            // Convert List<Program> to List<ProgramDetails>
-            List<ProgramDetails> programDetailsList = programService.getAllPrograms().stream()
-                .map(program -> new ProgramDetails.Builder()
-                    .setTitle(program.getTitle())
-                    .setDuration(program.getDuration())
-                    .setDifficulty(program.getDifficulty())
-                    .setGoals(program.getGoals())
-                    .setPrice(program.getPrice())
-                    .setSchedule(program.getSchedule())
-                    .setVideos(program.getVideos())
-                    .setDocuments(program.getDocuments())
-                    .build())
-                .toList();
-
-            // Save updated program data
-            PersistenceUtil.saveProgramData(new ArrayList<>(programDetailsList));
+        if (programService.updateProgram(updatedProgram)) {
+            
+            PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms()));
             logger.info("Program updated successfully.");
         } else {
             logger.warn("Failed to update program. Program may not exist.");
@@ -586,32 +535,20 @@ import org.slf4j.LoggerFactory;
 
 
 
+
     private static void deleteProgram(Scanner scanner) {
         logger.info("Enter Program Title to Delete: ");
         String title = scanner.nextLine();
 
         if (programService.deleteProgram(title)) {
-            // Convert List<Program> to List<ProgramDetails>
-            List<ProgramDetails> programDetailsList = programService.getAllPrograms().stream()
-                .map(program -> new ProgramDetails.Builder()
-                    .setTitle(program.getTitle())
-                    .setDuration(program.getDuration())
-                    .setDifficulty(program.getDifficulty())
-                    .setGoals(program.getGoals())
-                    .setPrice(program.getPrice())
-                    .setSchedule(program.getSchedule())
-                    .setVideos(program.getVideos())
-                    .setDocuments(program.getDocuments())
-                    .build())
-                .toList();
-
-            // Save updated program data
-            PersistenceUtil.saveProgramData(new ArrayList<>(programDetailsList));
+            
+            PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms()));
             logger.info("Program deleted successfully.");
         } else {
             logger.warn("Failed to delete program. Program may not exist.");
         }
     }
+
 
 
     private static void viewAllPrograms() {

@@ -16,12 +16,12 @@ public class PersistenceUtil {
     private static final String USERS_FILE = "users_data.txt";
     private static final String PROGRAMS_FILE = "programs.dat";
 
-    // Private constructor to prevent instantiation
+    
     private PersistenceUtil() {
         throw new UnsupportedOperationException("Utility class - cannot be instantiated");
     }
 
-    // Method to save user data to a file
+  
     public static void saveUserData(List<User> users) {
         if (users == null || users.isEmpty()) {
             logger.warn("No user data to save.");
@@ -43,7 +43,7 @@ public class PersistenceUtil {
         }
     }
 
-    // Method to load user data from a file
+    
     public static List<User> loadUserData() {
         List<User> users = new ArrayList<>();
         File file = new File(USERS_FILE);
@@ -69,31 +69,33 @@ public class PersistenceUtil {
         return users;
     }
 
-    // Method to save program data to a file
-    public static void saveProgramData(List<ProgramDetails> programs) {
+   
+    public static void saveProgramData(List<Program> programs) {
         if (programs == null || programs.isEmpty()) {
             logger.warn("No program data to save.");
             return;
         }
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(PROGRAMS_FILE))) {
-            oos.writeObject(programs);
+            oos.writeObject(programs); // Serialize the list of Program objects
             logger.info("Program data saved successfully.");
         } catch (IOException e) {
             logger.error("Error saving program data: {}", e.getMessage(), e);
         }
     }
 
-    // Method to load program data from a file
+
+   
     @SuppressWarnings("unchecked")
-    public static List<ProgramDetails> loadProgramData() {
-        List<ProgramDetails> programs = new ArrayList<>();
+    public static List<Program> loadProgramData() {
+        List<Program> programs = new ArrayList<>();
         File file = new File(PROGRAMS_FILE);
         if (!file.exists()) {
             logger.warn("Program data file not found: {}", PROGRAMS_FILE);
             return programs;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            programs = (List<ProgramDetails>) ois.readObject();
+            programs = (List<Program>) ois.readObject(); // Deserialize the list of Program objects
+            logger.info("Program data loaded successfully.");
         } catch (IOException e) {
             logger.error("Error loading program data: {}", e.getMessage(), e);
         } catch (ClassNotFoundException e) {
@@ -101,6 +103,7 @@ public class PersistenceUtil {
         }
         return programs;
     }
+
 
 
     public static void saveClientProfileData(List<Profile> profiles) {

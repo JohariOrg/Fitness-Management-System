@@ -67,11 +67,11 @@ import org.slf4j.LoggerFactory;
         private static void manageAdminMenu(Scanner scanner) {
             boolean back = false;
             while (!back) {
-                logger.info("\n=== Admin Menu ===");
-                logger.info("1. User Management");
-                logger.info("2. Program Monitoring");
-                logger.info("3. Back to Main Menu");
-                logger.info("Enter your choice: ");
+            	System.out.println("\n=== Admin Menu ===");
+                System.out.println("1. User Management");
+                System.out.println("2. Program Monitoring Menu");
+                System.out.println("3. Back to Main Menu");
+                System.out.println("Enter your choice: ");
                 int choice = scanner.nextInt();
                 scanner.nextLine();
 
@@ -467,31 +467,42 @@ import org.slf4j.LoggerFactory;
 
     private static void updateProgram(Scanner scanner) {
         logger.info("Enter Program Title to Update: ");
-        String title = scanner.nextLine();
+        String title = scanner.nextLine().trim();
 
         logger.info("Enter New Duration: ");
-        String duration = scanner.nextLine();
+        String duration = scanner.nextLine().trim();
 
         logger.info("Enter New Difficulty Level: ");
-        String difficulty = scanner.nextLine();
+        String difficulty = scanner.nextLine().trim();
 
         logger.info("Enter New Goals: ");
-        String goals = scanner.nextLine();
+        String goals = scanner.nextLine().trim();
 
         logger.info("Enter New Price: ");
         double price = scanner.nextDouble();
-        scanner.nextLine();
+        scanner.nextLine(); 
 
         logger.info("Enter New Schedule: ");
-        String schedule = scanner.nextLine();
+        String schedule = scanner.nextLine().trim();
 
         logger.info("Enter New Video Tutorials (comma-separated): ");
-        List<String> videos = List.of(scanner.nextLine().split(","));
+        List<String> videos = List.of(scanner.nextLine().split(",")).stream()
+                                  .map(String::trim) 
+                                  .toList();
 
         logger.info("Enter New Documents (comma-separated): ");
-        List<String> documents = List.of(scanner.nextLine().split(","));
+        List<String> documents = List.of(scanner.nextLine().split(",")).stream()
+                                     .map(String::trim) 
+                                     .toList();
 
-        if (programService.updateProgram(title, duration, difficulty, goals, price, schedule, videos, documents)) {
+        
+        ProgramDetails programDetails = new ProgramDetails(
+            title, duration, difficulty, goals, price, schedule, videos, documents
+        );
+
+        
+        if (programService.updateProgram(programDetails)) {
+            
             PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms()));
             logger.info("Program updated successfully.");
         } else {
@@ -576,23 +587,23 @@ import org.slf4j.LoggerFactory;
     private static void createClientProfile(Scanner scanner) {
         logger.info("\n=== Create Client Profile ===");
 
-        System.out.print("Enter Name: ");
+        logger.info("Enter Name: ");
         String name = scanner.nextLine();
 
-        System.out.print("Enter Age: ");
+        logger.info("Enter Age: ");
         int age = scanner.nextInt();
         scanner.nextLine();
 
-        System.out.print("Enter Email: ");
+        logger.info("Enter Email: ");
         String email = scanner.nextLine();
 
-        System.out.print("Enter Fitness Goals: ");
+        logger.info("Enter Fitness Goals: ");
         String fitnessGoals = scanner.nextLine();
 
-        System.out.print("Enter Dietary Preferences: ");
+        logger.info("Enter Dietary Preferences: ");
         String dietaryPreferences = scanner.nextLine();
 
-        System.out.print("Enter Dietary Restrictions: ");
+        logger.info("Enter Dietary Restrictions: ");
         String dietaryRestrictions = scanner.nextLine();
 
         Profile createdProfile = new Profile(name, age, email, fitnessGoals, dietaryPreferences, dietaryRestrictions);
@@ -606,7 +617,7 @@ import org.slf4j.LoggerFactory;
 
     private static void viewClientProfile(Scanner scanner) {
         logger.info("\n=== View Client Profile ===");
-        System.out.print("Enter your email: ");
+        logger.info("Enter your email: ");
         String email = scanner.nextLine();
 
         Profile profile = clientProfileService.viewProfile(email);
@@ -625,7 +636,7 @@ import org.slf4j.LoggerFactory;
 
     private static void updateClientProfile(Scanner scanner) {
         logger.info("\n=== Update Client Profile ===");
-        System.out.print("Enter your email: ");
+        logger.info("Enter your email: ");
         String email = scanner.nextLine();
 
         Profile profile = clientProfileService.viewProfile(email);
@@ -635,7 +646,7 @@ import org.slf4j.LoggerFactory;
             profile.setName(getUpdatedInput(scanner, "Name", profile.getName()));
 
             while (true) {
-                System.out.print("Enter New Age (" + profile.getAge() + "): ");
+                logger.info("Enter New Age (" + profile.getAge() + "): ");
                 String ageInput = scanner.nextLine();
 
                 if (!ageInput.trim().isEmpty()) {
@@ -671,7 +682,7 @@ import org.slf4j.LoggerFactory;
 
     private static void deleteClientProfile(Scanner scanner) {
         logger.info("\n=== Delete Client Profile ===");
-        System.out.print("Enter your email: ");
+        logger.info("Enter your email: ");
         String email = scanner.nextLine();
 
         Profile profile = clientProfileService.viewProfile(email);
@@ -685,7 +696,7 @@ import org.slf4j.LoggerFactory;
     }
 
     private static String getUpdatedInput(Scanner scanner, String field, String currentValue) {
-        System.out.print("Enter New " + field + " (" + currentValue + "): ");
+        logger.info("Enter New " + field + " (" + currentValue + "): ");
         return scanner.nextLine();
     }
 }

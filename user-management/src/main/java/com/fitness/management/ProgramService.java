@@ -19,20 +19,23 @@ public class ProgramService {
         return true;
     }
 
-    public boolean updateProgram(String title, String duration, String difficulty, String goals, double price, String schedule, List<String> videos, List<String> documents) {
-        Program program = programs.get(title.trim());
+    public boolean updateProgram(ProgramDetails programDetails) {
+        Program program = programs.get(programDetails.getTitle().trim());
         if (program == null) {
             return false; 
         }
-        program.setDuration(duration);
-        program.setDifficulty(difficulty);
-        program.setGoals(goals);
-        program.setPrice(price);
-        program.setSchedule(schedule);
-        program.setVideos(videos);
-        program.setDocuments(documents);
+
+        program.setDuration(programDetails.getDuration());
+        program.setDifficulty(programDetails.getDifficulty());
+        program.setGoals(programDetails.getGoals());
+        program.setPrice(programDetails.getPrice());
+        program.setSchedule(programDetails.getSchedule());
+        program.setVideos(programDetails.getVideos());
+        program.setDocuments(programDetails.getDocuments());
+
         return true;
     }
+
 
     public boolean deleteProgram(String title) {
         return programs.remove(title.trim()) != null;
@@ -50,7 +53,7 @@ public class ProgramService {
         return programs.values() 
                        .stream() 
                        .sorted(Comparator.comparingInt(Program::getEnrollment).reversed()) 
-                       .collect(Collectors.toList()); 
+                       .toList(); 
     }
 
 

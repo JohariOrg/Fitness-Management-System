@@ -5,12 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.function.Function;
 
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.function.Predicate;
+
 
 public class MainMenu {
 	  private static final Logger logger = LoggerFactory.getLogger(MainMenu.class);
@@ -24,6 +25,8 @@ public class MainMenu {
 	    private static final String NO_PROGRAMS_FOUND = "No programs found";
 	    private static final String ACTIVE = "active";
 	    private static final String ENTER_YOUR_EMAIL = "Enter your email:";
+	    private static final String BACK_TO_MAIN_MENU = "Back to Main Menu";
+	    
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
@@ -53,12 +56,13 @@ public class MainMenu {
         scanner.close();
     }
 
-    private static boolean handleMenu(Scanner scanner, String menuTitle, List<String> options, Function<Integer, Boolean> menuHandler) {
+    private static boolean handleMenu(Scanner scanner, String menuTitle, List<String> options, Predicate<Integer> menuHandler) {
         boolean exit = false;
         while (!exit) {
             logger.info(menuTitle);
             for (int i = 0; i < options.size(); i++) {
-                logger.info("{}. {}", i + 1, options.get(i));
+                String option = options.get(i); 
+                logger.info("{}. {}", i + 1, option);
             }
             logger.info(ENTER_YOUR_CHOICE);
 
@@ -69,7 +73,7 @@ public class MainMenu {
                 if (choice < 1 || choice > options.size()) {
                     logger.warn(INVALID_CHOICE);
                 } else {
-                    exit = menuHandler.apply(choice); 
+                    exit = menuHandler.test(choice); 
                 }
             } catch (Exception e) {
                 logger.error("Invalid input. Please enter a valid number.", e);
@@ -78,6 +82,7 @@ public class MainMenu {
         }
         return exit;
     }
+
 
     
     private static void loadAllData() {
@@ -105,7 +110,7 @@ public class MainMenu {
 
     private static void manageAdminMenu(Scanner scanner) {
         handleMenu(scanner, "\n=== Admin Menu ===",
-            List.of("User Management", "Program Monitoring Menu", "Back to Main Menu"),
+            List.of("User Management", "Program Monitoring Menu", BACK_TO_MAIN_MENU),
             choice -> {
                 switch (choice) {
                     case 1 -> manageUserAccountsMenu(scanner);
@@ -185,7 +190,7 @@ public class MainMenu {
         
         private static void manageInstructorMenu(Scanner scanner) {
             handleMenu(scanner, "\n=== Instructor Menu ===",
-                List.of("Create Program", "Update Program", "Delete Program", "View All Programs", "Back to Main Menu"),
+                List.of("Create Program", "Update Program", "Delete Program", "View All Programs", BACK_TO_MAIN_MENU),
                 choice -> {
                     switch (choice) {
                         case 1 -> createProgram(scanner);
@@ -205,7 +210,7 @@ public class MainMenu {
 
         private static void manageClientMenu(Scanner scanner) {
             handleMenu(scanner, "\n=== Client Menu ===",
-                List.of("Manage Client Profile", "Back to Main Menu"),
+                List.of("Manage Client Profile", BACK_TO_MAIN_MENU),
                 choice -> {
                     switch (choice) {
                         case 1 -> manageClientProfile(scanner);

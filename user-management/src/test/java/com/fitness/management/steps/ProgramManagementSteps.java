@@ -12,34 +12,45 @@ import static org.junit.Assert.*;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ProgramManagementSteps {
 
     private static ProgramService programService = new ProgramService(); 
     private Program currentProgram;
+    private static final Logger logger = LoggerFactory.getLogger(ProgramManagementSteps.class);
+    
 
     @Given("the instructor dashboard is loaded")
     public void the_instructor_dashboard_is_loaded() {
+        logger.info("Instructor dashboard is now loaded.");
         
     }
 
-    @When("the instructor creates a new fitness program with:")
+
+    @When("the instructor creates a new fitness program with:") 
     public void the_instructor_creates_a_new_fitness_program_with(DataTable dataTable) {
+        
         Map<String, String> data = dataTable.asMap(String.class, String.class);
         List<String> videos = List.of(data.get("videos").split(", "));
         List<String> documents = List.of(data.get("documents").split(", "));
-        currentProgram = new Program(
-            data.get("title").trim(),
-            data.get("duration"),
-            data.get("difficulty"),
-            data.get("goals"),
-            Double.parseDouble(data.get("price")),
-            data.get("schedule"),
-            videos,
-            documents
-        );
+
+        
+        currentProgram = new Program.Builder(data.get("title").trim())
+            .setDuration(data.get("duration"))
+            .setDifficulty(data.get("difficulty"))
+            .setGoals(data.get("goals"))
+            .setPrice(Double.parseDouble(data.get("price")))
+            .setSchedule(data.get("schedule"))
+            .setVideos(videos)
+            .setDocuments(documents)
+            .build();
+
         boolean result = programService.addProgram(currentProgram);
         assertTrue("Program should be created successfully", result);
     }
+
 
     @Then("the fitness program should be created successfully")
     public void the_fitness_program_should_be_created_successfully() {

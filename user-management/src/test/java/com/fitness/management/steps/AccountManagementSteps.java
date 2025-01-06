@@ -10,6 +10,9 @@ import io.cucumber.java.en.When;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -19,6 +22,7 @@ public class AccountManagementSteps {
     private Profile createdProfile;
     private UserService userService;
     private String currentClientEmail; 
+    private static final Logger logger = LoggerFactory.getLogger(AccountManagementSteps.class);
 
     public AccountManagementSteps(ClientProfileService clientProfileService, UserService userService) {
         this.clientProfileService = clientProfileService;
@@ -27,7 +31,7 @@ public class AccountManagementSteps {
 
     @Given("the client dashboard is loaded")
     public void the_client_dashboard_is_loaded() {
-        System.out.println("Client dashboard loaded.");
+    	logger.info("Client dashboard loaded.");
     }
 
     @When("the client creates a new profile with the following details:")

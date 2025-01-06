@@ -67,11 +67,11 @@ import org.slf4j.LoggerFactory;
         private static void manageAdminMenu(Scanner scanner) {
             boolean back = false;
             while (!back) {
-            	System.out.println("\n=== Admin Menu ===");
-                System.out.println("1. User Management");
-                System.out.println("2. Program Monitoring Menu");
-                System.out.println("3. Back to Main Menu");
-                System.out.println("Enter your choice: ");
+            	logger.info("\n=== Admin Menu ===");
+                logger.info("1. User Management");
+                logger.info("2. Program Monitoring Menu");
+                logger.info("3. Back to Main Menu");
+                logger.info("Enter your choice: ");
                 int choice = scanner.nextInt();
                 scanner.nextLine();
 
@@ -431,24 +431,25 @@ import org.slf4j.LoggerFactory;
 
 
     private static void createProgram(Scanner scanner) {
+        
         logger.info("Enter Program Title: ");
-        String title = scanner.nextLine();
+        String title = scanner.nextLine().trim();
 
         logger.info("Enter Duration (e.g., 6 weeks): ");
-        String duration = scanner.nextLine();
+        String duration = scanner.nextLine().trim();
 
         logger.info("Enter Difficulty Level (e.g., Beginner/Intermediate): ");
-        String difficulty = scanner.nextLine();
+        String difficulty = scanner.nextLine().trim();
 
         logger.info("Enter Goals: ");
-        String goals = scanner.nextLine();
+        String goals = scanner.nextLine().trim();
 
         logger.info("Enter Price: ");
         double price = scanner.nextDouble();
-        scanner.nextLine();
+        scanner.nextLine(); 
 
         logger.info("Enter Schedule (e.g., Online/In-Person): ");
-        String schedule = scanner.nextLine();
+        String schedule = scanner.nextLine().trim();
 
         logger.info("Enter Video Tutorials (comma-separated): ");
         List<String> videos = List.of(scanner.nextLine().split(","));
@@ -456,14 +457,26 @@ import org.slf4j.LoggerFactory;
         logger.info("Enter Documents (comma-separated): ");
         List<String> documents = List.of(scanner.nextLine().split(","));
 
-        Program program = new Program(title, duration, difficulty, goals, price, schedule, videos, documents);
+        
+        Program program = new Program.Builder(title)
+            .setDuration(duration)
+            .setDifficulty(difficulty)
+            .setGoals(goals)
+            .setPrice(price)
+            .setSchedule(schedule)
+            .setVideos(videos)
+            .setDocuments(documents)
+            .build();
+
+        
         if (programService.addProgram(program)) {
-            PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms())); 
+            PersistenceUtil.saveProgramData(new ArrayList<>(programService.getAllPrograms()));
             logger.info("Program created successfully.");
         } else {
-            logger.warn("Failed to create program. Program with this title may already exist.");
+            logger.warn("Failed to create program. A program with this title may already exist.");
         }
     }
+
 
     private static void updateProgram(Scanner scanner) {
         logger.info("Enter Program Title to Update: ");

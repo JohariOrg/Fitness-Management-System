@@ -35,7 +35,7 @@ public class ProgramMonitoringSteps {
         popularPrograms = programService.getMostPopularPrograms()
                                         .stream()
                                         .map(Program::getTitle) 
-                                        .collect(Collectors.toList());
+                                        .toList();
     }
 
     @Then("the system should display the most popular programs by enrollment")

@@ -1,7 +1,6 @@
 package com.fitness.management;
 
 
-import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -20,21 +19,31 @@ public class ProgramService {
     }
 
     public boolean updateProgram(ProgramDetails programDetails) {
-        Program program = programs.get(programDetails.getTitle().trim());
-        if (program == null) {
+        
+        Program existingProgram = programs.get(programDetails.getTitle().trim());
+        if (existingProgram == null) {
             return false; 
         }
 
-        program.setDuration(programDetails.getDuration());
-        program.setDifficulty(programDetails.getDifficulty());
-        program.setGoals(programDetails.getGoals());
-        program.setPrice(programDetails.getPrice());
-        program.setSchedule(programDetails.getSchedule());
-        program.setVideos(programDetails.getVideos());
-        program.setDocuments(programDetails.getDocuments());
+        Program updatedProgram = new Program.Builder(programDetails.getTitle().trim())
+            .setDuration(programDetails.getDuration())
+            .setDifficulty(programDetails.getDifficulty())
+            .setGoals(programDetails.getGoals())
+            .setPrice(programDetails.getPrice())
+            .setSchedule(programDetails.getSchedule())
+            .setVideos(programDetails.getVideos())
+            .setDocuments(programDetails.getDocuments())
+            .setEnrollment(existingProgram.getEnrollment()) 
+            .setProgressSummary(existingProgram.getProgressSummary()) 
+            .setIsActive(existingProgram.isActive()) 
+            .build();
+
+        
+        programs.put(updatedProgram.getTitle(), updatedProgram);
 
         return true;
     }
+
 
 
     public boolean deleteProgram(String title) {

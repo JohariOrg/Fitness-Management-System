@@ -14,6 +14,12 @@ import org.slf4j.LoggerFactory;
         private static ProgramService programService = new ProgramService();
         private static ClientProfileService clientProfileService = new ClientProfileService();
         private static Map<String, Integer> activityData = new HashMap<>();
+        private static final String ENTER_YOUR_CHOICE = "Enter your choice: ";
+        private static final String INVALID_CHOICE = "Invalid choice. Please try again.";
+        private static final String USER_NOT_FOUND = "User not found.";
+        private static final String NO_PROGRAMS_FOUND = "No programs found";
+        private static final String ACTIVE = "active";
+        private static final String ENTER_YOUR_EMAIL = "Enter your email:";
 
         public static void main(String[] args) {
             Scanner scanner = new Scanner(System.in);
@@ -33,7 +39,7 @@ import org.slf4j.LoggerFactory;
                     logger.info("2. Instructor Menu");
                     logger.info("3. Client Menu");
                     logger.info("4. Exit");
-                    logger.info("Enter your choice: ");
+                    logger.info(ENTER_YOUR_CHOICE); 
                     int choice = scanner.nextInt();
                     scanner.nextLine();
 
@@ -53,7 +59,7 @@ import org.slf4j.LoggerFactory;
                             exit = true;
                             break;
                         default:
-                            logger.warn("Invalid choice. Please try again.");
+                        	logger.warn(INVALID_CHOICE);
                     }
                 } catch (Exception e) {
                     logger.error("Invalid input. Please enter a valid number.", e);
@@ -71,7 +77,7 @@ import org.slf4j.LoggerFactory;
                 logger.info("1. User Management");
                 logger.info("2. Program Monitoring Menu");
                 logger.info("3. Back to Main Menu");
-                logger.info("Enter your choice: ");
+                logger.info(ENTER_YOUR_CHOICE); 
                 int choice = scanner.nextInt();
                 scanner.nextLine();
 
@@ -86,7 +92,7 @@ import org.slf4j.LoggerFactory;
                         back = true;
                         break;
                     default:
-                        logger.warn("Invalid choice. Please try again.");
+                    	logger.warn(INVALID_CHOICE);
                 }
             }
         }
@@ -103,7 +109,7 @@ import org.slf4j.LoggerFactory;
                 logger.info("5. View User Activity Statistics");
                 logger.info("6. View All Users with Status");
                 logger.info("7. Back to Admin Menu");
-                logger.info("Enter your choice: ");
+                logger.info(ENTER_YOUR_CHOICE); 
                 int choice = scanner.nextInt();
                 scanner.nextLine();
 
@@ -130,7 +136,7 @@ import org.slf4j.LoggerFactory;
                         back = true;
                         break;
                     default:
-                        logger.warn("Invalid choice. Please try again.");
+                    	logger.warn(INVALID_CHOICE);
                 }
             }
         }
@@ -146,7 +152,7 @@ import org.slf4j.LoggerFactory;
                 logger.info("4. Generate Client Progress Report");
                 logger.info("5. View Active and Completed Programs");
                 logger.info("6. Back to Admin Menu");
-                logger.info("Enter your choice: ");
+                logger.info(ENTER_YOUR_CHOICE); 
                 int choice = scanner.nextInt();
                 scanner.nextLine();
 
@@ -170,7 +176,7 @@ import org.slf4j.LoggerFactory;
                         back = true;
                         break;
                     default:
-                        logger.warn("Invalid choice. Please try again.");
+                    	logger.warn(INVALID_CHOICE);
                 }
             }
         }
@@ -185,7 +191,7 @@ import org.slf4j.LoggerFactory;
                 logger.info("3. Delete Program");
                 logger.info("4. View All Programs");
                 logger.info("5. Back to Main Menu");
-                logger.info("Enter your choice: ");
+                logger.info(ENTER_YOUR_CHOICE); 
                 int choice = scanner.nextInt();
                 scanner.nextLine();
 
@@ -206,7 +212,7 @@ import org.slf4j.LoggerFactory;
                         back = true;
                         break;
                     default:
-                        logger.warn("Invalid choice. Please try again.");
+                    	logger.warn(INVALID_CHOICE);
                 }
             }
         }
@@ -219,7 +225,7 @@ import org.slf4j.LoggerFactory;
                 logger.info("\n=== Client Menu ===");
                 logger.info("1. Manage Client Profile");
                 logger.info("2. Back to Main Menu");
-                logger.info("Enter your choice: ");
+                logger.info(ENTER_YOUR_CHOICE); 
                 int choice = scanner.nextInt();
                 scanner.nextLine();
 
@@ -231,7 +237,7 @@ import org.slf4j.LoggerFactory;
                         back = true;
                         break;
                     default:
-                        logger.warn("Invalid choice. Please try again.");
+                    	logger.warn(INVALID_CHOICE);
                 }
             }
         }
@@ -246,7 +252,7 @@ import org.slf4j.LoggerFactory;
                 logger.info("3. Update Profile");
                 logger.info("4. Delete Profile");
                 logger.info("5. Back to Client Menu");
-                logger.info("Enter your choice: ");
+                logger.info(ENTER_YOUR_CHOICE); 
                 int choice = scanner.nextInt();
                 scanner.nextLine();
 
@@ -267,7 +273,7 @@ import org.slf4j.LoggerFactory;
                         back = true;
                         break;
                     default:
-                        logger.warn("Invalid choice. Please try again.");
+                    	logger.warn(INVALID_CHOICE);
                 }
             }
         }
@@ -294,7 +300,7 @@ import org.slf4j.LoggerFactory;
         String email = getEmail(scanner);
         String role = getRole(scanner);
         String status = getStatus(scanner);
-        boolean isActive = status.equalsIgnoreCase("active");
+        boolean isActive = status.equalsIgnoreCase(ACTIVE);
         User user = new User(name, email, role, isActive);
         if (userService.addUser(user)) {
             logger.info("User added successfully.");
@@ -309,7 +315,7 @@ import org.slf4j.LoggerFactory;
         String email = getEmail(scanner);
 
         if (userService.getUser(email) == null) {
-            logger.warn("User not found.");
+            logger.warn(USER_NOT_FOUND);
             return;
         }
 
@@ -330,7 +336,7 @@ import org.slf4j.LoggerFactory;
         	logger.info("User deactivated successfully.");
             incrementActivity(email);
         } else {
-        	logger.warn("User not found.");
+        	logger.warn(USER_NOT_FOUND);
         }
     }
     
@@ -344,7 +350,7 @@ import org.slf4j.LoggerFactory;
             user.setActive(true);
             logger.info("Instructor approved successfully."); 
         } else if (user == null) {
-            logger.warn("User not found."); 
+            logger.warn(USER_NOT_FOUND); 
         } else {
             logger.warn("This user is not eligible for approval."); 
         }
@@ -420,7 +426,7 @@ import org.slf4j.LoggerFactory;
         while (true) {
             logger.info("Enter status (active/inactive): ");
             status = scanner.nextLine();
-            if (status.equalsIgnoreCase("active") || status.equalsIgnoreCase("inactive")) {
+            if (status.equalsIgnoreCase(ACTIVE) || status.equalsIgnoreCase("inactive")) {
                 break;
             } else {
                 logger.warn("Invalid status. Please enter 'active' or 'inactive'.");
@@ -539,7 +545,7 @@ import org.slf4j.LoggerFactory;
     private static void viewAllPrograms() {
         List<Program> programs = programService.getAllPrograms();
         if (programs.isEmpty()) {
-            logger.info("No programs found.");
+            logger.info(NO_PROGRAMS_FOUND);
         } else {
             for (Program program : programs) {
                 logger.info("{}", program);
@@ -550,7 +556,7 @@ import org.slf4j.LoggerFactory;
     private static void viewMostPopularPrograms() {
         List<Program> popularPrograms = programService.getMostPopularPrograms(); 
         if (popularPrograms.isEmpty()) {
-            logger.warn("No programs found.");
+            logger.warn(NO_PROGRAMS_FOUND);
         } else {
             popularPrograms.forEach(program -> logger.info("Title: {}", program.getTitle()));
         }
@@ -586,10 +592,10 @@ import org.slf4j.LoggerFactory;
     private static void viewActiveAndCompletedPrograms() {
         Map<String, List<Program>> categorizedPrograms = programService.getActiveAndCompletedPrograms(); 
         if (categorizedPrograms.isEmpty()) {
-            logger.warn("No programs found.");
+            logger.warn(NO_PROGRAMS_FOUND);
         } else {
             logger.info("Active Programs:");
-            categorizedPrograms.getOrDefault("active", new ArrayList<>())
+            categorizedPrograms.getOrDefault(ACTIVE, new ArrayList<>())
                                .forEach(program -> logger.info(" - {}", program.getTitle()));
             logger.info("Completed Programs:");
             categorizedPrograms.getOrDefault("completed", new ArrayList<>())
@@ -630,7 +636,7 @@ import org.slf4j.LoggerFactory;
 
     private static void viewClientProfile(Scanner scanner) {
         logger.info("\n=== View Client Profile ===");
-        logger.info("Enter your email: ");
+        logger.info(ENTER_YOUR_EMAIL);
         String email = scanner.nextLine();
 
         Profile profile = clientProfileService.viewProfile(email);
@@ -649,7 +655,7 @@ import org.slf4j.LoggerFactory;
 
     private static void updateClientProfile(Scanner scanner) {
         logger.info("\n=== Update Client Profile ===");
-        logger.info("Enter your email: ");
+        logger.info(ENTER_YOUR_EMAIL);
         String email = scanner.nextLine();
 
         Profile profile = clientProfileService.viewProfile(email);
@@ -695,7 +701,7 @@ import org.slf4j.LoggerFactory;
 
     private static void deleteClientProfile(Scanner scanner) {
         logger.info("\n=== Delete Client Profile ===");
-        logger.info("Enter your email: ");
+        logger.info(ENTER_YOUR_EMAIL);
         String email = scanner.nextLine();
 
         Profile profile = clientProfileService.viewProfile(email);

@@ -11,39 +11,39 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-
 public class UserManagementSteps {
-	private UserService userService;
-	private Map<String, Boolean> activityData;
-	
-	@Given("the admin dashboard  is loaded")
-	public void the_admin_dash_board_is_loaded() {
-		userService  = new UserService();
-		activityData = new HashMap<>();
-	}
+    private UserService userService;
+    private Map<String, Boolean> activityData;
 
-	@When("the admin adds a new user with name {string}, email {string} ,role {string}, and status {string}")
-	public void the_admin_adds_a_new_user_with_name_rand_email_role_and_status(String name, String email, String role, String status) {
-	   boolean isActive = status.equalsIgnoreCase("active");
-	   User user = new User(name , email , role , isActive);
-	   boolean result = userService.addUser(user);
-	   assertTrue("User should be added successfully", result );
-	}
+    @Given("the admin dashboard is loaded")
+    public void the_admin_dashboard_is_loaded() {
+        userService = new UserService();
+        activityData = new HashMap<>();
+    }
 
-	@Then("the user should be added successfully")
-	public void the_user_should_be_added_successfully() {
-	   assertNotNull("User should exist", userService.getUser("Rand@email.com"));
-	}
+    @When("the admin adds a new user with name {string}, email {string}, role {string}, status {string}, age {int}, fitness goals {string}, dietary preferences {string}, and dietary restrictions {string}")
+    public void the_admin_adds_a_new_user_with_name_email_role_status_age_fitness_goals_dietary_preferences_and_dietary_restrictions(
+        String name, String email, String role, String status, int age, String fitnessGoals, String dietaryPreferences, String dietaryRestrictions) {
+        boolean isActive = status.equalsIgnoreCase("active");
+        User user = new User(name, email, role, isActive, age, fitnessGoals, dietaryPreferences, dietaryRestrictions);
+        boolean result = userService.addUser(user);
+        assertTrue("User should be added successfully", result);
+    }
 
-	@Then("the user with email {string} should exist in the system")
-	public void the_user_with_email_should_exist_in_the_system(String email) {
-	    User user = userService.getUser(email);
-	    assertNotNull("User should exist in the system", user);
-	}
+    @Then("the user should be added successfully")
+    public void the_user_should_be_added_successfully() {
+        assertNotNull("User should exist", userService.getUser("Rand@email.com"));
+    }
 
-	@When("a new instructor registration with email {string} is pending approval")
+    @Then("the user with email {string} should exist in the system")
+    public void the_user_with_email_should_exist_in_the_system(String email) {
+        User user = userService.getUser(email);
+        assertNotNull("User should exist in the system", user);
+    }
+
+    @When("a new instructor registration with email {string} is pending approval")
     public void a_new_instructor_registration_with_email_is_pending_approval(String email) {
-        User user = new User("New Instructor", email, "Instructor", false);
+        User user = new User("New Instructor", email, "Instructor", false, 0, "", "", "");
         boolean added = userService.addUser(user);
         assertTrue("Instructor registration should be added for approval", added);
     }

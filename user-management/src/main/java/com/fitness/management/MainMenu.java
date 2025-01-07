@@ -265,39 +265,80 @@ public class MainMenu {
     
     
     private static void addUser(Scanner scanner) {
-        String name = getName(scanner);
-        String email = getEmail(scanner);
-        String role = getRole(scanner);
-        String status = getStatus(scanner);
-        boolean isActive = status.equalsIgnoreCase(ACTIVE);
-        User user = new User(name, email, role, isActive);
+        logger.info("Enter name: ");
+        String name = scanner.nextLine();
+
+        logger.info("Enter email: ");
+        String email = scanner.nextLine();
+
+        logger.info("Enter role (Instructor/Client): ");
+        String role = scanner.nextLine();
+
+        logger.info("Enter status (active/inactive): ");
+        String status = scanner.nextLine();
+        boolean isActive = status.equalsIgnoreCase("active");
+
+        logger.info("Enter age: ");
+        int age = scanner.nextInt();
+        scanner.nextLine();
+
+        logger.info("Enter fitness goals: ");
+        String fitnessGoals = scanner.nextLine();
+
+        logger.info("Enter dietary preferences: ");
+        String dietaryPreferences = scanner.nextLine();
+
+        logger.info("Enter dietary restrictions: ");
+        String dietaryRestrictions = scanner.nextLine();
+
+        // Create and add the user
+        User user = new User(name, email, role, isActive, age, fitnessGoals, dietaryPreferences, dietaryRestrictions);
         if (userService.addUser(user)) {
             logger.info("User added successfully.");
-            activityData.put(email, 0);
-            incrementActivity(user.getEmail());
         } else {
-            logger.warn("User with this email already exists.");
+            logger.warn("Failed to add user. User with this email may already exist.");
         }
     }
 
-    private static void updateUser(Scanner scanner) {
-        String email = getEmail(scanner);
 
-        if (userService.getUser(email) == null) {
+    private static void updateUser(Scanner scanner) {
+        logger.info("Enter the email of the user to update: ");
+        String email = scanner.nextLine();
+
+        User user = userService.getUser(email);
+        if (user == null) {
             logger.warn(USER_NOT_FOUND);
             return;
         }
 
-        String name = getName(scanner);
-        String role = getRole(scanner);
+        logger.info("Enter new name (current: {}): ", user.getName());
+        String name = scanner.nextLine();
 
-        if (userService.updateUser(email, name, role)) {
+        logger.info("Enter new role (current: {}): ", user.getRole());
+        String role = scanner.nextLine();
+
+        logger.info("Enter new status (active/inactive, current: {}): ", user.isActive() ? "active" : "inactive");
+        boolean isActive = scanner.nextLine().equalsIgnoreCase("active");
+
+        logger.info("Enter new age (current: {}): ", user.getAge());
+        int age = Integer.parseInt(scanner.nextLine());
+
+        logger.info("Enter new fitness goals (current: {}): ", user.getFitnessGoals());
+        String fitnessGoals = scanner.nextLine();
+
+        logger.info("Enter new dietary preferences (current: {}): ", user.getDietaryPreferences());
+        String dietaryPreferences = scanner.nextLine();
+
+        logger.info("Enter new dietary restrictions (current: {}): ", user.getDietaryRestrictions());
+        String dietaryRestrictions = scanner.nextLine();
+
+        if (userService.updateUser(email, name, role, isActive, age, fitnessGoals, dietaryPreferences, dietaryRestrictions)) {
             logger.info("User updated successfully.");
-            incrementActivity(email);
         } else {
             logger.warn("Failed to update user.");
         }
     }
+
 
     private static void deactivateUser(Scanner scanner) {
         String email = getEmail(scanner);
@@ -344,23 +385,35 @@ public class MainMenu {
         } else {
             for (User user : userService.getAllUsers()) {
                 String status = user.isActive() ? "Active" : "Inactive";
-                logger.info("Name: {}, Email: {}, Role: {}, Status: {}", user.getName(), user.getEmail(), user.getRole(), status);
+
+                // Fetch the profile data for additional details
+                Profile profile = clientProfileService.viewProfile(user.getEmail());
+                if (profile != null) {
+                    // Use profile details if they exist
+                    logger.info("Name: {}, Email: {}, Role: {}, Status: {}, Age: {}, Fitness Goals: {}, Dietary Preferences: {}, Dietary Restrictions: {}",
+                        user.getName(),
+                        user.getEmail(),
+                        user.getRole(),
+                        status,
+                        profile.getAge(),
+                        profile.getFitnessGoals(),
+                        profile.getDietaryPreferences(),
+                        profile.getDietaryRestrictions()
+                    );
+                } else {
+                    // If no profile exists, only show user data
+                    logger.info("Name: {}, Email: {}, Role: {}, Status: {}, Age: Not Available, Fitness Goals: Not Available, Dietary Preferences: Not Available, Dietary Restrictions: Not Available",
+                        user.getName(),
+                        user.getEmail(),
+                        user.getRole(),
+                        status
+                    );
+                }
             }
         }
     }
-    private static String getName(Scanner scanner) {
-        String name;
-        while (true) {
-            logger.info("Enter name: ");
-            name = scanner.nextLine();
-            if (!name.trim().isEmpty() && name.matches("^[a-zA-Z\\s]+$")) {
-                break;
-            } else {
-                logger.warn("Invalid name. Please enter a valid name (only letters and spaces).");
-            }
-        }
-        return name;
-    }
+
+    
 
     private static String getEmail(Scanner scanner) {
         String email;
@@ -374,34 +427,6 @@ public class MainMenu {
             }
         }
         return email;
-    }
-
-    private static String getRole(Scanner scanner) {
-        String role;
-        while (true) {
-            logger.info("Enter role (Instructor/Client): ");
-            role = scanner.nextLine();
-            if (role.equalsIgnoreCase("Instructor") || role.equalsIgnoreCase("Client")) {
-                break;
-            } else {
-                logger.warn("Invalid role. Please enter 'Instructor' or 'Client'.");
-            }
-        }
-        return role;
-    }
-
-    private static String getStatus(Scanner scanner) {
-        String status;
-        while (true) {
-            logger.info("Enter status (active/inactive): ");
-            status = scanner.nextLine();
-            if (status.equalsIgnoreCase(ACTIVE) || status.equalsIgnoreCase("inactive")) {
-                break;
-            } else {
-                logger.warn("Invalid status. Please enter 'active' or 'inactive'.");
-            }
-        }
-        return status;
     }
 
 
@@ -527,10 +552,11 @@ public class MainMenu {
             logger.info(NO_PROGRAMS_FOUND);
         } else {
             for (Program program : programs) {
-                logger.info("{}", program);
+                logger.info("{}", program); 
             }
         }
     }
+
     
     private static void viewMostPopularPrograms() {
         List<Program> popularPrograms = programService.getMostPopularPrograms(); 
@@ -632,53 +658,35 @@ public class MainMenu {
         }
     }
 
-    private static void updateClientProfile(Scanner scanner) { 
-        logger.info("\n=== Update Client Profile ===");
-        logger.info(ENTER_YOUR_EMAIL);
+    private static void updateClientProfile(Scanner scanner) {
+        logger.info("Enter your email to update profile: ");
         String email = scanner.nextLine();
 
         Profile profile = clientProfileService.viewProfile(email);
         if (profile == null) {
-            logger.warn("No profile found for the given email.");
-        } else {
-            profile.setName(getUpdatedInput(scanner, "Name", profile.getName()));
-
-            while (true) {
-                logger.info("Enter New Age ({}): ", profile.getAge());
-                String ageInput = scanner.nextLine();
-
-                if (!ageInput.trim().isEmpty()) {
-                    try {
-                        int age = Integer.parseInt(ageInput);
-                        profile.setAge(age);
-                        break;
-                    } catch (NumberFormatException e) {
-                        logger.error("Invalid input. Please enter a valid number for age.");
-                    }
-                } else {
-                    logger.warn("Age cannot be blank. Please enter a valid number.");
-                }
-            }
-
-            profile.setEmail(getUpdatedInput(scanner, "Email", profile.getEmail()));
-            profile.setFitnessGoals(getUpdatedInput(scanner, "Fitness Goals", profile.getFitnessGoals()));
-            profile.setDietaryPreferences(getUpdatedInput(scanner, "Dietary Preferences", profile.getDietaryPreferences()));
-            profile.setDietaryRestrictions(getUpdatedInput(scanner, "Dietary Restrictions", profile.getDietaryRestrictions()));
-
-            clientProfileService.updateProfile(
-                profile.getName(),
-                profile.getAge(),
-                profile.getEmail(),
-                profile.getFitnessGoals(),
-                profile.getDietaryPreferences(),
-                profile.getDietaryRestrictions()
-            );
-
-            logger.info("Profile updated successfully.");
+            logger.warn("Profile not found.");
+            return;
         }
+
+        logger.info("Enter new name (current: {}): ", profile.getName());
+        String name = scanner.nextLine();
+
+        logger.info("Enter new age (current: {}): ", profile.getAge());
+        int age = Integer.parseInt(scanner.nextLine());
+
+        logger.info("Enter new fitness goals (current: {}): ", profile.getFitnessGoals());
+        String fitnessGoals = scanner.nextLine();
+
+        logger.info("Enter new dietary preferences (current: {}): ", profile.getDietaryPreferences());
+        String dietaryPreferences = scanner.nextLine();
+
+        logger.info("Enter new dietary restrictions (current: {}): ", profile.getDietaryRestrictions());
+        String dietaryRestrictions = scanner.nextLine();
+
+        clientProfileService.updateProfile(name, age, email, fitnessGoals, dietaryPreferences, dietaryRestrictions, userService);
+        logger.info("Profile updated successfully.");
     }
 
-    
 
 
     private static void deleteClientProfile(Scanner scanner) {
@@ -686,18 +694,14 @@ public class MainMenu {
         logger.info(ENTER_YOUR_EMAIL);
         String email = scanner.nextLine();
 
-        Profile profile = clientProfileService.viewProfile(email);
-
-        if (profile == null) {
-            logger.warn("No profile found.");
-        } else {
-            clientProfileService.deleteProfile(userService);
-            logger.info("Profile deleted successfully.");
+        try {
+            // Attempt to delete the profile
+            clientProfileService.deleteProfile(email, userService);
+            logger.info("Profile deleted successfully for email: {}", email);
+        } catch (IllegalStateException e) {
+            logger.warn("Failed to delete profile: {}", e.getMessage());
         }
     }
 
-    private static String getUpdatedInput(Scanner scanner, String field, String currentValue) {
-        logger.info("Enter New {} ({}): ", field, currentValue);
-        return scanner.nextLine();
-    }
+    
 }

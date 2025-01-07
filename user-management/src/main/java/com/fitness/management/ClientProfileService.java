@@ -21,66 +21,123 @@ public class ClientProfileService {
     }
 
     public void createProfile(Profile profile, UserService userService) {
-        this.profile = profile;
-        logger.info("Profile created: {}", profile); 
-
-        String email = profile.getEmail();
-        User user = new User(profile.getName(), email, "client", true);
-        if (!userService.addUser(user)) {
-            logger.warn("User with this email already exists."); 
+        if (profile == null) {
+            throw new IllegalArgumentException("Profile cannot be null.");
         }
 
-        // Save the profile persistently
-        List<Profile> profiles = PersistenceUtil.loadClientProfileDataList();
-        profiles.add(profile);
-        PersistenceUtil.saveClientProfileData(profiles);
+        
+        User existingUser = userService.getUser(profile.getEmail());
+        if (existingUser != null) {
+            logger.warn("User with email {} already exists. Skipping creation.", profile.getEmail());
+            return; 
+        }
+
+        
+        User newUser = new User(
+            profile.getName(),
+            profile.getEmail(),
+            "Client", 
+            true, 
+            profile.getAge(),
+            profile.getFitnessGoals(),
+            profile.getDietaryPreferences(),
+            profile.getDietaryRestrictions()
+        );
+
+        userService.addUser(newUser);
+        logger.info("Profile created successfully for email: {}", profile.getEmail());
     }
 
-    public Profile viewProfile(String email) {
-        List<Profile> profiles = PersistenceUtil.loadClientProfileDataList();
-        Profile loadedProfile = profiles.stream()
-                                        .filter(p -> p.getEmail().equalsIgnoreCase(email))
-                                        .findFirst()
-                                        .orElse(null);
 
-        if (loadedProfile != null) {
-            logger.info("Profile found: {}", loadedProfile); 
-            return loadedProfile;
+
+    public Profile viewProfile(String email) {
+        // Always load fresh profile data from persistence
+        List<Profile> profiles = PersistenceUtil.loadClientProfileDataList();
+
+        // Find the profile with the matching email
+        Profile matchedProfile = profiles.stream()
+                                          .filter(profile -> profile.getEmail().equalsIgnoreCase(email))
+                                          .findFirst()
+                                          .orElse(null);
+
+        if (matchedProfile != null) {
+            logger.info("Profile found for email: {}", email);
+            return matchedProfile;
         } else {
-            logger.warn("No profile found for the given email."); 
+            logger.warn("No profile found for the given email: {}", email);
             return null;
         }
     }
 
-    public void updateProfile(String name, int age, String email, String fitnessGoals, String dietaryPreferences, String dietaryRestrictions) {
-        if (profile == null) {
-            throw new IllegalStateException("No profile exists to update.");
-        }
 
-        profile.setName(name);
-        profile.setAge(age);
-        profile.setEmail(email);
-        profile.setFitnessGoals(fitnessGoals);
-        profile.setDietaryPreferences(dietaryPreferences);
-        profile.setDietaryRestrictions(dietaryRestrictions);
-
+    public void updateProfile(String name, int age, String email, String fitnessGoals, String dietaryPreferences, String dietaryRestrictions, UserService userService) {
         
         List<Profile> profiles = PersistenceUtil.loadClientProfileDataList();
+
+        
+        Profile profileToUpdate = profiles.stream()
+                                           .filter(p -> p.getEmail().equalsIgnoreCase(email))
+                                           .findFirst()
+                                           .orElse(null);
+
+        if (profileToUpdate == null) {
+            logger.warn("No profile exists to update for email: {}", email);
+            throw new IllegalStateException("Profile does not exist.");
+        }
+
+        
+        profileToUpdate.setName(name);
+        profileToUpdate.setAge(age);
+        profileToUpdate.setFitnessGoals(fitnessGoals);
+        profileToUpdate.setDietaryPreferences(dietaryPreferences);
+        profileToUpdate.setDietaryRestrictions(dietaryRestrictions);
+
+        
+        boolean updateSuccess = userService.updateUser(email, name, "client", true, age, fitnessGoals, dietaryPreferences, dietaryRestrictions);
+        if (!updateSuccess) {
+            logger.warn("Failed to update user data for email: {}", email);
+            throw new IllegalStateException("Failed to synchronize user data.");
+        }
+
+        
         profiles.removeIf(p -> p.getEmail().equalsIgnoreCase(email));
-        profiles.add(profile);
+        profiles.add(profileToUpdate);
         PersistenceUtil.saveClientProfileData(profiles);
 
-        logger.info("Profile updated and saved: {}", profile); 
+        logger.info("Profile updated successfully and synchronized for email: {}", email);
     }
 
-    public void deleteProfile(UserService userService) {
-        if (profile == null) {
-            logger.warn("No profile exists to delete."); 
-            return;
+
+
+    public void deleteProfile(String email, UserService userService) {
+        // Load all profiles from persistent storage
+        List<Profile> profiles = PersistenceUtil.loadClientProfileDataList();
+
+        // Find the profile to delete
+        Profile profileToDelete = profiles.stream()
+                                           .filter(p -> p.getEmail().equalsIgnoreCase(email))
+                                           .findFirst()
+                                           .orElse(null);
+
+        if (profileToDelete == null) {
+            logger.warn("No profile exists to delete for email: {}", email);
+            throw new IllegalStateException("Profile does not exist.");
         }
-        logger.info("Profile deleted: {}", profile); 
-        userService.removeUserByName(profile.getName());
-        PersistenceUtil.deleteClientProfileData();
-        this.profile = null;
+
+        // Remove the profile from the list
+        profiles.removeIf(p -> p.getEmail().equalsIgnoreCase(email));
+
+        // Save the updated profiles list to persistence
+        PersistenceUtil.saveClientProfileData(profiles);
+        logger.info("Profile deleted successfully from persistence for email: {}", email);
+
+        // Synchronize deletion with UserService
+        boolean userRemoved = userService.removeUserByName(profileToDelete.getName());
+        if (!userRemoved) {
+            logger.warn("Failed to remove user from UserService for email: {}", email);
+        } else {
+            logger.info("User synchronized and removed from UserService for email: {}", email);
+        }
     }
+
 }

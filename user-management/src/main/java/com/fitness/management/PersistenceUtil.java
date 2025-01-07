@@ -30,14 +30,18 @@ public class PersistenceUtil {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(USERS_FILE))) {
             for (User user : users) {
                 String status = user.isActive() ? "Active" : "Inactive";
-                writer.write(String.format("%s,%s,%s,%s",
+                writer.write(String.format("%s,%s,%s,%s,%d,%s,%s,%s",
                         user.getName(),
                         user.getEmail(),
                         user.getRole(),
-                        status));
+                        status,
+                        user.getAge(),
+                        user.getFitnessGoals(),
+                        user.getDietaryPreferences(),
+                        user.getDietaryRestrictions()));
                 writer.newLine();
             }
-            logger.info("User data saved successfully.");
+            logger.info("User data saved successfully to users_data.txt.");
         } catch (IOException e) {
             logger.error("Error saving user data: {}", e.getMessage(), e);
         }
@@ -55,14 +59,19 @@ public class PersistenceUtil {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",");
-                if (parts.length == 4) {
+                if (parts.length == 8) {
                     String name = parts[0];
                     String email = parts[1];
                     String role = parts[2];
                     boolean isActive = "Active".equalsIgnoreCase(parts[3]);
-                    users.add(new User(name, email, role, isActive));
+                    int age = Integer.parseInt(parts[4]);
+                    String fitnessGoals = parts[5];
+                    String dietaryPreferences = parts[6];
+                    String dietaryRestrictions = parts[7];
+                    users.add(new User(name, email, role, isActive, age, fitnessGoals, dietaryPreferences, dietaryRestrictions));
                 }
             }
+           
         } catch (IOException e) {
             logger.error("Error loading user data: {}", e.getMessage(), e);
         }
@@ -76,7 +85,7 @@ public class PersistenceUtil {
             return;
         }
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(PROGRAMS_FILE))) {
-            oos.writeObject(programs); // Serialize the list of Program objects
+            oos.writeObject(programs); 
             logger.info("Program data saved successfully.");
         } catch (IOException e) {
             logger.error("Error saving program data: {}", e.getMessage(), e);
@@ -94,7 +103,7 @@ public class PersistenceUtil {
             return programs;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            programs = (List<Program>) ois.readObject(); // Deserialize the list of Program objects
+            programs = (List<Program>) ois.readObject(); 
             logger.info("Program data loaded successfully.");
         } catch (IOException e) {
             logger.error("Error loading program data: {}", e.getMessage(), e);
@@ -107,34 +116,56 @@ public class PersistenceUtil {
 
 
     public static void saveClientProfileData(List<Profile> profiles) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("client_profiles.dat"))) {
-            oos.writeObject(profiles);
-            logger.info("Client profiles saved successfully."); 
-        } catch (IOException e) {
-            logger.error("Error saving client profiles: {}", e.getMessage()); 
+        if (profiles == null || profiles.isEmpty()) {
+            logger.warn("No client profiles to save.");
+            return;
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    public static List<Profile> loadClientProfileDataList() {
-        File file = new File("client_profiles.dat");
-        if (!file.exists()) {
-            return new ArrayList<>(); 
-        }
-
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            Object obj = ois.readObject(); 
-            if (obj instanceof List) { 
-                return (List<Profile>) obj; 
-            } else {
-                logger.error("Error: Invalid data format in file."); 
-                return new ArrayList<>(); 
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("client_profiles.txt"))) {
+            for (Profile profile : profiles) {
+                writer.write(String.format("%s,%d,%s,%s,%s,%s",
+                        profile.getName(),
+                        profile.getAge(),
+                        profile.getEmail(),
+                        profile.getFitnessGoals(),
+                        profile.getDietaryPreferences(),
+                        profile.getDietaryRestrictions()));
+                writer.newLine();
             }
-        } catch (IOException | ClassNotFoundException e) {
-            logger.error("Error loading client profiles: {}", e.getMessage()); 
-            return new ArrayList<>(); 
+            logger.info("Client profiles saved successfully to client_profiles.txt.");
+        } catch (IOException e) {
+            logger.error("Error saving client profiles: {}", e.getMessage(), e);
         }
     }
+
+
+    public static List<Profile> loadClientProfileDataList() {
+        List<Profile> profiles = new ArrayList<>();
+        File file = new File("client_profiles.txt");
+        if (!file.exists()) {
+            logger.warn("Client profile data file not found: client_profiles.txt");
+            return profiles;
+        }
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 6) {
+                    String name = parts[0];
+                    int age = Integer.parseInt(parts[1]);
+                    String email = parts[2];
+                    String fitnessGoals = parts[3];
+                    String dietaryPreferences = parts[4];
+                    String dietaryRestrictions = parts[5];
+                    profiles.add(new Profile(name, age, email, fitnessGoals, dietaryPreferences, dietaryRestrictions));
+                }
+            }
+            logger.info("Client profiles loaded successfully from client_profiles.txt.");
+        } catch (IOException e) {
+            logger.error("Error loading client profiles: {}", e.getMessage(), e);
+        }
+        return profiles;
+    }
+
 
     public static void deleteClientProfileData() {
         Path filePath = Paths.get("client_profile.dat");

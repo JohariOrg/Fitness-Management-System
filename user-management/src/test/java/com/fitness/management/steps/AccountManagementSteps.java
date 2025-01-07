@@ -1,17 +1,20 @@
 package com.fitness.management.steps;
 
-import com.fitness.management.UserService;
 import com.fitness.management.ClientProfileService;
+import com.fitness.management.UserService;
 import com.fitness.management.Profile;
+import com.fitness.management.User;
+
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.Before; 
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -19,19 +22,24 @@ import static org.junit.Assert.assertNotNull;
 public class AccountManagementSteps {
 
     private ClientProfileService clientProfileService;
-    private Profile createdProfile;
     private UserService userService;
-    private String currentClientEmail; 
+    private Profile createdProfile;
+    private String currentClientEmail;
     private static final Logger logger = LoggerFactory.getLogger(AccountManagementSteps.class);
 
-    public AccountManagementSteps(ClientProfileService clientProfileService, UserService userService) {
-        this.clientProfileService = clientProfileService;
-        this.userService = userService;
+    @Before
+    public void setup() {
+        clientProfileService = new ClientProfileService();
+        userService = new UserService();
+
+        
+        userService.setUsers(new HashMap<>());
     }
+
 
     @Given("the client dashboard is loaded")
     public void the_client_dashboard_is_loaded() {
-    	logger.info("Client dashboard loaded.");
+        logger.info("Client dashboard loaded.");
     }
 
     @When("the client creates a new profile with the following details:")
@@ -47,31 +55,36 @@ public class AccountManagementSteps {
             profileData.get("Dietary Restrictions")
         );
 
-        currentClientEmail = profileData.get("Email"); 
+        currentClientEmail = profileData.get("Email");
         clientProfileService.createProfile(createdProfile, userService);
     }
 
     @Then("the profile should be created successfully")
     public void the_profile_should_be_created_successfully() {
         assertNotNull("Profile should not be null", createdProfile);
-        System.out.println("Profile created successfully: " + createdProfile);
+        logger.info("Profile created successfully: {}", createdProfile);
     }
 
     @Given("the client has already created a profile")
     public void the_client_has_already_created_a_profile() {
-        createdProfile = new Profile("John Doe", 30, "john.doe@example.com", "Weight Loss", "Vegetarian", "Gluten-Free");
-        currentClientEmail = "john.doe@example.com"; 
-        clientProfileService.createProfile(createdProfile, userService);
+        Profile existingProfile = new Profile("John Doe", 30, "john.doe@example.com", "Weight Loss", "Vegetarian", "Gluten-Free");
+        currentClientEmail = "john.doe@example.com";
+        clientProfileService.createProfile(existingProfile, userService);
     }
 
     @When("the client views their profile")
     public void the_client_views_their_profile() {
         createdProfile = clientProfileService.viewProfile(currentClientEmail);
+        assertNotNull("Profile should not be null when viewed", createdProfile);
+        logger.info("Profile successfully retrieved: {}", createdProfile);
     }
+
 
     @Then("the system should display the profile with the following details:")
     public void the_system_should_display_the_profile_with_the_following_details(DataTable dataTable) {
         Map<String, String> expectedData = dataTable.asMap(String.class, String.class);
+
+        assertNotNull("Profile should not be null before checking details", createdProfile);
 
         assertEquals(expectedData.get("Name"), createdProfile.getName());
         assertEquals(Integer.parseInt(expectedData.get("Age")), createdProfile.getAge());
@@ -79,8 +92,9 @@ public class AccountManagementSteps {
         assertEquals(expectedData.get("Dietary Preferences"), createdProfile.getDietaryPreferences());
         assertEquals(expectedData.get("Dietary Restrictions"), createdProfile.getDietaryRestrictions());
 
-        System.out.println("Profile details match expected values.");
+        logger.info("Profile details match expected values: {}", createdProfile);
     }
+
 
     @When("the client updates their profile with the following details:")
     public void the_client_updates_their_profile_with_the_following_details(DataTable dataTable) {
@@ -92,28 +106,48 @@ public class AccountManagementSteps {
             currentClientEmail,
             updatedData.get("Fitness Goals"),
             updatedData.get("Dietary Preferences"),
-            updatedData.get("Dietary Restrictions")
+            updatedData.get("Dietary Restrictions"),
+            userService 
         );
-
-        createdProfile = clientProfileService.viewProfile(currentClientEmail);
-        System.out.println("Profile updated successfully: " + createdProfile);
     }
 
     @Then("the profile should be updated successfully")
     public void the_profile_should_be_updated_successfully() {
-        assertNotNull("Profile should not be null after update", createdProfile);
-        System.out.println("Profile updated successfully: " + createdProfile);
+        Profile updatedProfile = clientProfileService.viewProfile(currentClientEmail);
+        assertNotNull("Updated profile should not be null", updatedProfile);
+
+        logger.info("Updated Profile Details:");
+        logger.info("Name: {}", updatedProfile.getName());
+        logger.info("Age: {}", updatedProfile.getAge());
+        logger.info("Email: {}", updatedProfile.getEmail());
+        logger.info("Fitness Goals: {}", updatedProfile.getFitnessGoals());
+        logger.info("Dietary Preferences: {}", updatedProfile.getDietaryPreferences());
+        logger.info("Dietary Restrictions: {}", updatedProfile.getDietaryRestrictions());
     }
 
     @When("the client deletes their profile")
     public void the_client_deletes_their_profile() {
-        clientProfileService.deleteProfile(userService);
+        try {
+            clientProfileService.deleteProfile(currentClientEmail, userService);
+            System.out.println("Profile deleted successfully for email: " + currentClientEmail);
+        } catch (IllegalStateException e) {
+            logger.error("Error during profile deletion: {}", e.getMessage());
+        }
     }
 
     @Then("the profile should be deleted successfully")
     public void the_profile_should_be_deleted_successfully() {
+        // Verify the profile is null after deletion
         Profile profile = clientProfileService.viewProfile(currentClientEmail);
         assertEquals("Profile should be null after deletion", null, profile);
-        System.out.println("Profile deleted successfully.");
+
+        // Verify the user is also null in UserService
+        User user = userService.getUser(currentClientEmail);
+        assertEquals("User should also be removed from UserService", null, user);
+
+        logger.info("Profile and associated user deleted successfully.");
     }
+
+
+
 }

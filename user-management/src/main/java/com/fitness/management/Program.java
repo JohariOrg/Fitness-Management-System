@@ -150,4 +150,23 @@ public class Program implements Serializable {
             return new Program(this);
         }
     }
+    
+    @Override
+    public String toString() {
+        return String.format(
+            "Program Title: %s\nDuration: %s\nDifficulty: %s\nGoals: %s\nPrice: %.2f\nSchedule: %s\nEnrollment: %d\nProgress: %s\nActive: %s\nVideos: %s\nDocuments: %s",
+            title,
+            duration,
+            difficulty,
+            goals,
+            price,
+            schedule,
+            enrollment,
+            progressSummary,
+            isActive ? "Yes" : "No",
+            videos != null ? String.join(", ", videos) : "None",
+            documents != null ? String.join(", ", documents) : "None"
+        );
+    }
+
 }

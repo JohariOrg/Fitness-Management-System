@@ -36,7 +36,8 @@ Feature: Account Management
       | Dietary Restrictions| Nut-Free               |
     Then the profile should be updated successfully
 
-  Scenario: Delete client profile
-    Given the client has already created a profile
-    When the client deletes their profile
-    Then the profile should be deleted successfully
+  Scenario: Deleting a profile
+  Given the client has already created a profile
+  When the client deletes their profile
+  Then the profile should be deleted successfully
+

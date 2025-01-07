@@ -24,9 +24,9 @@ public class ProgramMonitoringSteps {
         this.programService = new ProgramService(); 
     }
 
-    @Given("the admin dashboard is loaded")
-    public void the_admin_dashboard_is_loaded() {
-        System.out.println("Admin dashboard loaded.");
+    @Given("the admin dashboard for program monitoring is loaded")
+    public void the_admin_dashboard_for_program_monitoring_is_loaded() {
+        System.out.println("Admin dashboard for program monitoring loaded.");
     }
 
     

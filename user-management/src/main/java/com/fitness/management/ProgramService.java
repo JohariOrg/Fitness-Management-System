@@ -1,6 +1,5 @@
 package com.fitness.management;
 
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -10,63 +9,81 @@ import java.util.Map;
 public class ProgramService {
     private Map<String, Program> programs = new HashMap<>();
 
+    public ProgramService() {
+        
+    }
+
     public boolean addProgram(Program program) {
-        if (programs.containsKey(program.getTitle())) {
-            return false; 
+        if (program == null || programs.containsKey(program.getTitle().trim())) {
+            return false;
         }
-        programs.put(program.getTitle(), program);
+        programs.put(program.getTitle().trim(), program);
         return true;
     }
 
     public boolean updateProgram(Program updatedProgram) {
-        
-        Program existingProgram = programs.get(updatedProgram.getTitle().trim());
-        if (existingProgram == null) {
-            return false; 
+        if (updatedProgram == null || updatedProgram.getTitle() == null || updatedProgram.getTitle().trim().isEmpty()) {
+            System.err.println("Invalid updated program: Missing or empty title.");
+            return false;
         }
 
-        // Create a new Program instance with updated values while preserving certain existing fields
-        Program mergedProgram = new Program.Builder(updatedProgram.getTitle().trim())
-            .setDuration(updatedProgram.getDuration())
-            .setDifficulty(updatedProgram.getDifficulty())
-            .setGoals(updatedProgram.getGoals())
-            .setPrice(updatedProgram.getPrice())
-            .setSchedule(updatedProgram.getSchedule())
-            .setVideos(updatedProgram.getVideos())
-            .setDocuments(updatedProgram.getDocuments())
-            .setEnrollment(existingProgram.getEnrollment()) 
-            .setProgressSummary(existingProgram.getProgressSummary()) 
-            .setIsActive(existingProgram.isActive()) 
+        String trimmedTitle = updatedProgram.getTitle().trim();
+        Program existingProgram = programs.get(trimmedTitle);
+
+        if (existingProgram == null) {
+            System.err.println("Update failed: No program found with title '" + trimmedTitle + "'.");
+            return false;
+        }
+
+        // Merge updated fields into the existing program
+        Program mergedProgram = new Program.Builder(trimmedTitle)
+            .setDuration(updatedProgram.getDuration() != null ? updatedProgram.getDuration() : existingProgram.getDuration())
+            .setDifficulty(updatedProgram.getDifficulty() != null ? updatedProgram.getDifficulty() : existingProgram.getDifficulty())
+            .setGoals(updatedProgram.getGoals() != null ? updatedProgram.getGoals() : existingProgram.getGoals())
+            .setPrice(updatedProgram.getPrice() > 0 ? updatedProgram.getPrice() : existingProgram.getPrice())
+            .setSchedule(updatedProgram.getSchedule() != null ? updatedProgram.getSchedule() : existingProgram.getSchedule())
+            .setVideos(updatedProgram.getVideos() != null ? updatedProgram.getVideos() : existingProgram.getVideos())
+            .setDocuments(updatedProgram.getDocuments() != null ? updatedProgram.getDocuments() : existingProgram.getDocuments())
+            .setEnrollment(existingProgram.getEnrollment()) // Preserve enrollment
+            .setProgressSummary(existingProgram.getProgressSummary()) // Preserve progress summary
+            .setIsActive(existingProgram.isActive()) // Preserve active status
             .build();
 
-        
-        programs.put(mergedProgram.getTitle(), mergedProgram);
-
-        return true; 
+        programs.put(trimmedTitle, mergedProgram);
+        System.out.println("Program '" + trimmedTitle + "' updated successfully.");
+        return true;
     }
 
 
 
     public boolean deleteProgram(String title) {
-        return programs.remove(title.trim()) != null;
+        String trimmedTitle = title.trim();
+        if (!programs.containsKey(trimmedTitle)) {
+            System.out.println("Program with title '" + trimmedTitle + "' not found in programs.");
+            return false;
+        }
+        programs.remove(trimmedTitle);
+        return true;
     }
 
+
     public Program getProgram(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            return null;
+        }
         return programs.get(title.trim());
     }
 
     public List<Program> getAllPrograms() {
-        return new ArrayList<>(programs.values()); 
+        return new ArrayList<>(programs.values());
     }
-    
+
     public List<Program> getMostPopularPrograms() {
-        return programs.values() 
-                       .stream() 
-                       .sorted(Comparator.comparingInt(Program::getEnrollment).reversed()) 
-                       .toList(); 
+        return programs.values()
+                       .stream()
+                       .sorted(Comparator.comparingInt(Program::getEnrollment).reversed())
+                       .toList();
     }
-
-
 
     public Map<String, Double> generateRevenueReport() {
         Map<String, Double> revenueReport = new HashMap<>();
@@ -105,8 +122,6 @@ public class ProgramService {
                 categorizedPrograms.get("Completed").add(program);
             }
         }
-
         return categorizedPrograms;
     }
 }
-

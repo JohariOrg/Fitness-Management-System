@@ -11,23 +11,36 @@ import org.slf4j.LoggerFactory;
 
 public class PersistenceUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(PersistenceUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(PersistenceUtil.class);
 
-    private static final String USERS_FILE = "users_data.txt";
-    private static final String PROGRAMS_FILE = "programs.dat";
+    // Default file paths
+    private static String usersFile = "users_data.txt";
+    private static String programsFile = "programs.dat";
+    private static String clientProfileFilePath = "client_profile.dat";
 
-    
     private PersistenceUtil() {
         throw new UnsupportedOperationException("Utility class - cannot be instantiated");
     }
+    public static void setClientProfileFilePath(String path) {
+        clientProfileFilePath = path;
+    }
 
+    // Setter for usersFile (for testability)
+    public static void setUsersFilePath(String path) {
+        usersFile = path;
+    }
+
+    // Setter for programsFile (for testability)
+    public static void setProgramsFilePath(String path) {
+        programsFile = path;
+    }
   
     public static void saveUserData(List<User> users) {
         if (users == null || users.isEmpty()) {
             logger.warn("No user data to save.");
             return;
         }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(USERS_FILE))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(usersFile))) {
             for (User user : users) {
                 String status = user.isActive() ? "Active" : "Inactive";
                 writer.write(String.format("%s,%s,%s,%s,%d,%s,%s,%s",
@@ -41,50 +54,48 @@ public class PersistenceUtil {
                         user.getDietaryRestrictions()));
                 writer.newLine();
             }
-            logger.info("User data saved successfully to users_data.txt.");
+            logger.info("User data saved successfully to {}", usersFile);
         } catch (IOException e) {
             logger.error("Error saving user data: {}", e.getMessage(), e);
         }
     }
-
+       
     
-    public static List<User> loadUserData() {
-        List<User> users = new ArrayList<>();
-        File file = new File(USERS_FILE);
-        if (!file.exists()) {
-            logger.warn("User data file not found: {}", USERS_FILE);
-            return users;
-        }
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length == 8) {
-                    String name = parts[0];
-                    String email = parts[1];
-                    String role = parts[2];
-                    boolean isActive = "Active".equalsIgnoreCase(parts[3]);
-                    int age = Integer.parseInt(parts[4]);
-                    String fitnessGoals = parts[5];
-                    String dietaryPreferences = parts[6];
-                    String dietaryRestrictions = parts[7];
-                    users.add(new User(name, email, role, isActive, age, fitnessGoals, dietaryPreferences, dietaryRestrictions));
+            public static List<User> loadUserData() {
+                List<User> users = new ArrayList<>();
+                File file = new File(usersFile);
+                if (!file.exists()) {
+                    logger.warn("User data file not found: {}", usersFile);
+                    return users;
                 }
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        String[] parts = line.split(",");
+                        if (parts.length == 8) {
+                            String name = parts[0];
+                            String email = parts[1];
+                            String role = parts[2];
+                            boolean isActive = "Active".equalsIgnoreCase(parts[3]);
+                            int age = Integer.parseInt(parts[4]);
+                            String fitnessGoals = parts[5];
+                            String dietaryPreferences = parts[6];
+                            String dietaryRestrictions = parts[7];
+                            users.add(new User(name, email, role, isActive, age, fitnessGoals, dietaryPreferences, dietaryRestrictions));
+                        }
+                    }
+                } catch (IOException e) {
+                    logger.error("Error loading user data: {}", e.getMessage(), e);
+                }
+                return users;
             }
-           
-        } catch (IOException e) {
-            logger.error("Error loading user data: {}", e.getMessage(), e);
-        }
-        return users;
-    }
-
    
     public static void saveProgramData(List<Program> programs) {
         if (programs == null || programs.isEmpty()) {
             logger.warn("No program data to save.");
             return;
         }
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(PROGRAMS_FILE))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(programsFile))) {
             oos.writeObject(programs); 
             logger.info("Program data saved successfully.");
         } catch (IOException e) {
@@ -97,9 +108,9 @@ public class PersistenceUtil {
     @SuppressWarnings("unchecked")
     public static List<Program> loadProgramData() {
         List<Program> programs = new ArrayList<>();
-        File file = new File(PROGRAMS_FILE);
+        File file = new File(programsFile);
         if (!file.exists()) {
-            logger.warn("Program data file not found: {}", PROGRAMS_FILE);
+            logger.warn("Program data file not found: {}", programsFile);
             return programs;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
@@ -168,7 +179,7 @@ public class PersistenceUtil {
 
 
     public static void deleteClientProfileData() {
-        Path filePath = Paths.get("client_profile.dat");
+        Path filePath = Paths.get(clientProfileFilePath);
         if (Files.exists(filePath)) {
             try {
                 Files.delete(filePath);

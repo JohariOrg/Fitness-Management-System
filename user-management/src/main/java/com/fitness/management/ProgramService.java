@@ -10,16 +10,41 @@ public class ProgramService {
     private Map<String, Program> programs = new HashMap<>();
 
     public ProgramService() {
-        
+        List<Program> persistedPrograms = PersistenceUtil.loadProgramData();
+        for (Program program : persistedPrograms) {
+            programs.put(program.getTitle().trim(), program);
+        }
     }
 
+
     public boolean addProgram(Program program) {
-        if (program == null || programs.containsKey(program.getTitle().trim())) {
+        if (program == null || program.getTitle() == null || program.getTitle().trim().isEmpty()) {
+            System.err.println("Invalid program: Missing or empty title.");
             return false;
         }
-        programs.put(program.getTitle().trim(), program);
+
+        String trimmedTitle = program.getTitle().trim();
+        Program existingProgram = programs.get(trimmedTitle);
+
+        if (existingProgram != null) {
+            // Check if the program details are identical
+            if (existingProgram.equals(program)) {
+                System.err.println("Program already exists with title: '" + trimmedTitle + "'.");
+                return false;
+            }
+        }
+
+        programs.put(trimmedTitle, program);
+
+        // Save to persistence
+        List<Program> allPrograms = new ArrayList<>(programs.values());
+        PersistenceUtil.saveProgramData(allPrograms);
+
+        System.out.println("Program added successfully: " + program);
         return true;
     }
+
+
 
     public boolean updateProgram(Program updatedProgram) {
         if (updatedProgram == null || updatedProgram.getTitle() == null || updatedProgram.getTitle().trim().isEmpty()) {
@@ -35,7 +60,7 @@ public class ProgramService {
             return false;
         }
 
-        // Merge updated fields into the existing program
+        
         Program mergedProgram = new Program.Builder(trimmedTitle)
             .setDuration(updatedProgram.getDuration() != null ? updatedProgram.getDuration() : existingProgram.getDuration())
             .setDifficulty(updatedProgram.getDifficulty() != null ? updatedProgram.getDifficulty() : existingProgram.getDifficulty())
@@ -44,17 +69,18 @@ public class ProgramService {
             .setSchedule(updatedProgram.getSchedule() != null ? updatedProgram.getSchedule() : existingProgram.getSchedule())
             .setVideos(updatedProgram.getVideos() != null ? updatedProgram.getVideos() : existingProgram.getVideos())
             .setDocuments(updatedProgram.getDocuments() != null ? updatedProgram.getDocuments() : existingProgram.getDocuments())
-            .setEnrollment(existingProgram.getEnrollment()) // Preserve enrollment
-            .setProgressSummary(existingProgram.getProgressSummary()) // Preserve progress summary
-            .setIsActive(existingProgram.isActive()) // Preserve active status
+            .setEnrollment(existingProgram.getEnrollment()) 
+            .setProgressSummary(existingProgram.getProgressSummary()) 
+            .setIsActive(existingProgram.isActive()) 
             .build();
 
         programs.put(trimmedTitle, mergedProgram);
+
+        
+        PersistenceUtil.saveProgramData(getAllPrograms());
         System.out.println("Program '" + trimmedTitle + "' updated successfully.");
         return true;
     }
-
-
 
     public boolean deleteProgram(String title) {
         String trimmedTitle = title.trim();
@@ -63,9 +89,11 @@ public class ProgramService {
             return false;
         }
         programs.remove(trimmedTitle);
+
+        
+        PersistenceUtil.saveProgramData(getAllPrograms());
         return true;
     }
-
 
     public Program getProgram(String title) {
         if (title == null || title.trim().isEmpty()) {

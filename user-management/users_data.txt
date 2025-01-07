@@ -1,2 +1,2 @@
-John Doe,john@example.com,Client,Active,30,Lose weight,Vegan,None
+John Doe,john.doe@example.com,Client,Active,30,Lose weight,Vegan,None
 Jane Doe,jane@example.com,Admin,Inactive,25,Gain muscle,Vegetarian,None

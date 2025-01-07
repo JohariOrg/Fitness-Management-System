@@ -22,15 +22,17 @@ public class PersistenceUtilTest {
     private static final String TEST_CLIENT_PROFILE_FILE = "test_client_profile.dat";
     @Before
     public void setUp() {
-        
+     
+        PersistenceUtil.setClientProfileFilePath(TEST_CLIENT_PROFILE_FILE);
+
         PersistenceUtil.setUsersFilePath(TEST_USERS_FILE);
         PersistenceUtil.setProgramsFilePath(TEST_PROGRAMS_FILE);
 
-        
         deleteFile(TEST_USERS_FILE);
         deleteFile(TEST_PROGRAMS_FILE);
         deleteFile(TEST_CLIENT_PROFILE_FILE);
     }
+
 
     @After
     public void tearDown() {
@@ -238,13 +240,18 @@ public class PersistenceUtilTest {
 
     @Test
     public void testDeleteClientProfileDataIOException() throws IOException {
-        
         Path clientProfilePath = Paths.get(TEST_CLIENT_PROFILE_FILE);
         Files.createFile(clientProfilePath);
         File clientProfileFile = clientProfilePath.toFile();
         clientProfileFile.setWritable(false);
-        PersistenceUtil.deleteClientProfileData();
-        assertTrue(Files.exists(clientProfilePath)); 
+        try {
+            PersistenceUtil.deleteClientProfileData();
+            fail("Expected an IllegalStateException due to read-only file");
+        } catch (IllegalStateException e) {
+            
+        }
+        assertTrue("File should not be deleted", Files.exists(clientProfilePath));
         clientProfileFile.setWritable(true);
     }
+
 }

@@ -18,7 +18,7 @@ public class UserServiceTest {
         userService = new UserService();
 
         
-        User user1 = new User("John Doe", "john@example.com", "Client", true, 30, "Lose weight", "Vegan", "None");
+        User user1 = new User("John Doe", "john.doe@example.com", "Client", true, 30, "Lose weight", "Vegan", "None");
         User user2 = new User("Jane Doe", "jane@example.com", "Admin", false, 25, "Gain muscle", "Vegetarian", "None");
 
         Map<String, User> initialUsers = new HashMap<>();
@@ -42,7 +42,7 @@ public class UserServiceTest {
 
     @Test
     public void testAddUserWithDuplicateEmail() {
-        User duplicateUser = new User("Duplicate", "john@example.com", "Client", true, 30, "Lose weight", "Vegan", "None");
+        User duplicateUser = new User("Duplicate", "john.doe@example.com", "Client", true, 30, "Lose weight", "Vegan", "None");
 
         boolean result = userService.addUser(duplicateUser);
         assertFalse("User with duplicate email should not be added", result);
@@ -50,10 +50,10 @@ public class UserServiceTest {
 
     @Test
     public void testUpdateUser() {
-        boolean result = userService.updateUser("john@example.com", "John Updated", "Admin", false, 35, "Build muscle", "Vegetarian", "None");
+        boolean result = userService.updateUser("john.doe@example.com", "John Updated", "Admin", false, 35, "Build muscle", "Vegetarian", "None");
         assertTrue("User should be updated successfully", result);
 
-        User updatedUser = userService.getUser("john@example.com");
+        User updatedUser = userService.getUser("john.doe@example.com");
         assertNotNull("Updated user should not be null", updatedUser);
         assertEquals("John Updated", updatedUser.getName());
         assertEquals(35, updatedUser.getAge());
@@ -104,7 +104,7 @@ public class UserServiceTest {
     public void testGetUserActivityStats() {
         Map<String, Boolean> stats = userService.getUserActivityStats();
         assertEquals("There should be 2 activity stats initially", 2, stats.size());
-        assertTrue("John should be active", stats.get("john@example.com"));
+        assertTrue("John should be active", stats.get("john.doe@example.com"));
         assertFalse("Jane should be inactive", stats.get("jane@example.com"));
     }
 
@@ -113,7 +113,7 @@ public class UserServiceTest {
         boolean result = userService.removeUserByName("John Doe");
         assertTrue("User should be removed successfully", result);
 
-        User removedUser = userService.getUser("john@example.com");
+        User removedUser = userService.getUser("john.doe@example.com");
         assertNull("Removed user should be null", removedUser);
     }
 

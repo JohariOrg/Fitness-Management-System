@@ -1,6 +1,7 @@
 package com.fitness.management.steps;
 
 import com.fitness.management.ClientProfileService;
+import com.fitness.management.PersistenceUtilMock;
 import com.fitness.management.UserService;
 import com.fitness.management.Profile;
 import com.fitness.management.User;
@@ -13,7 +14,9 @@ import io.cucumber.java.en.When;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -68,12 +71,18 @@ public class AccountManagementSteps {
     @Given("the client has already created a profile")
     public void the_client_has_already_created_a_profile() {
         Profile existingProfile = new Profile("John Doe", 30, "john.doe@example.com", "Weight Loss", "Vegetarian", "Gluten-Free");
+        List<Profile> mockProfiles = new ArrayList<>();
+        mockProfiles.add(existingProfile);
+        PersistenceUtilMock.setProfiles(mockProfiles);
         currentClientEmail = "john.doe@example.com";
         clientProfileService.createProfile(existingProfile, userService);
     }
 
     @When("the client views their profile")
     public void the_client_views_their_profile() {
+    	
+        List<Profile> profiles = PersistenceUtilMock.loadClientProfileDataList();
+        System.out.println("Profiles in PersistenceUtilMock: " + profiles);
         createdProfile = clientProfileService.viewProfile(currentClientEmail);
         assertNotNull("Profile should not be null when viewed", createdProfile);
         logger.info("Profile successfully retrieved: {}", createdProfile);

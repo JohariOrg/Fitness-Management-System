@@ -70,11 +70,16 @@ public class ProgramManagementSteps {
     public void the_instructor_updates_the_program_titled_with(String title, DataTable dataTable) {
         logger.info("Attempting to update program with title '{}'.", title);
 
+        
+        List<Program> allPrograms = programService.getAllPrograms();
+        logger.info("Programs currently in the system: {}", allPrograms);
+
         Map<String, String> data = dataTable.asMap(String.class, String.class);
 
         List<String> videos = List.of(data.get("videos").split(", "));
         List<String> documents = List.of(data.get("documents").split(", "));
 
+        
         Program updatedProgram = new Program.Builder(title.trim())
             .setDuration(data.get("duration").trim())
             .setDifficulty(data.get("difficulty").trim())
@@ -84,19 +89,16 @@ public class ProgramManagementSteps {
             .setVideos(videos)
             .setDocuments(documents)
             .build();
-
         boolean updated = programService.updateProgram(updatedProgram);
-
         if (!updated) {
             logger.error("Update failed: Program '{}' does not exist or data is invalid.", title);
         }
-
         assertTrue("Program should be updated successfully", updated);
-
         currentProgram = programService.getProgram(title.trim());
         assertNotNull("Program should exist after update", currentProgram);
-        logger.info("Program '{}' updated successfully.", title);
+        logger.info("Program '{}' updated successfully with new details.", title);
     }
+
 
     @Then("the fitness program should be updated successfully")
     public void the_fitness_program_should_be_updated_successfully() {

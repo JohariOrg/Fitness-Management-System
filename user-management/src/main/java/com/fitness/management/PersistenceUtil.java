@@ -183,12 +183,14 @@ public class PersistenceUtil {
         if (Files.exists(filePath)) {
             try {
                 Files.delete(filePath);
-                logger.info("Client profile data deleted successfully.");
+                logger.info("Client profile data file deleted successfully: {}", filePath);
             } catch (IOException e) {
-                logger.error("Failed to delete client profile data: " + e.getMessage(), e);
+                logger.error("Failed to delete client profile data file: {}. Error: {}", filePath, e.getMessage(), e);
+                throw new IllegalStateException("Could not delete client profile data file", e); // Optional: Fail the operation
             }
         } else {
-            logger.warn("Client profile data does not exist.");
+            logger.warn("Client profile data file does not exist: {}", filePath);
         }
     }
+
 }

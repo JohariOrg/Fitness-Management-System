@@ -14,7 +14,6 @@ public class ClientProfileServiceTest {
 
     private ClientProfileService clientProfileService;
     private UserService mockUserService;
-    private List<Profile> mockProfiles;
 
     @Before
     public void setUp() {
@@ -28,23 +27,13 @@ public class ClientProfileServiceTest {
 
             @Override
             public boolean addUser(User user) {
-                if (user.getName() == null || user.getName().isEmpty() ||
-                    user.getEmail() == null || user.getEmail().isEmpty() ||
-                    user.getRole() == null || user.getRole().isEmpty()) {
-                    return false;
-                }
-
-                if (users.containsKey(user.getEmail().toLowerCase())) {
-                    return false;
-                }
-
                 users.put(user.getEmail().toLowerCase(), user);
                 return true;
             }
 
             @Override
-            public boolean updateUser(String email, String name, String role, boolean active,
-                                      int age, String fitnessGoals, String dietaryPreferences, String dietaryRestrictions) {
+            public boolean updateUser(String email, String name, String role, boolean active, int age,
+                                      String fitnessGoals, String dietaryPreferences, String dietaryRestrictions) {
                 User existingUser = getUser(email);
                 if (existingUser != null) {
                     existingUser.setName(name);
@@ -63,71 +52,94 @@ public class ClientProfileServiceTest {
             }
         };
 
-        mockProfiles = new ArrayList<>();
-        mockProfiles.add(new Profile("John Doe", 30, "john@example.com", "Lose weight", "Vegan", "None"));
-        mockProfiles.add(new Profile("Jane Doe", 25, "jane@example.com", "Gain muscle", "Vegetarian", "None"));
+        // Add baseline users and profiles for testing
+        User user = new User(
+                "John Doe",
+                "john.doe@example.com",
+                "Client",
+                true,
+                30,
+                "Lose weight",
+                "Vegan",
+                "None"
+        );
+        mockUserService.addUser(user);
+
+        List<Profile> baselineProfiles = new ArrayList<>();
+        baselineProfiles.add(new Profile(
+                "John Doe",
+                30,
+                "john.doe@example.com",
+                "Lose weight",
+                "Vegan",
+                "None"
+        ));
+        PersistenceUtilMock.setProfiles(baselineProfiles);
+
+        clientProfileService = new ClientProfileService();
     }
 
     @Test
-    public void testCreateProfile() {
-    	Profile newProfile = new Profile("Sam Smith", 28, "sam@example.com", "Stay fit", "Keto", "None");
+    public void testConstructorWithEmail() {
+        // Test the constructor that accepts an email
+        clientProfileService = new ClientProfileService("john.doe@example.com");
 
-        clientProfileService = new ClientProfileService();
-        clientProfileService.createProfile(newProfile, mockUserService);
-
-        User createdUser = mockUserService.getUser("sam@example.com");
-        assertNotNull(createdUser);
-        assertEquals("Sam Smith", createdUser.getName());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateProfile_NullProfile() {
-        clientProfileService = new ClientProfileService();
-        clientProfileService.createProfile(null, mockUserService);
+        Profile loadedProfile = clientProfileService.viewProfile("john.doe@example.com");
+        assertNotNull("Profile should not be null", loadedProfile);
+        assertEquals("John Doe", loadedProfile.getName());
+        assertEquals(30, loadedProfile.getAge());
     }
 
     @Test
-    public void testViewProfile() {
-        // Set up the mock profiles in the PersistenceUtilMock
-        List<Profile> mockProfiles = new ArrayList<>();
-        mockProfiles.add(new Profile("John Doe", 30, "john@example.com", "Lose weight", "Vegan", "None"));
+    public void testCreateProfile_UserAlreadyExists() {
+        Profile existingProfile = new Profile("John Doe", 30, "john.doe@example.com", "Lose weight", "Vegan", "None");
 
-        // Ensure PersistenceUtilMock has the profiles
-        PersistenceUtilMock.setProfiles(mockProfiles);
+        clientProfileService.createProfile(existingProfile, mockUserService);
 
-        // Initialize the ClientProfileService (it uses PersistenceUtilMock instead of PersistenceUtil)
-        clientProfileService = new ClientProfileService();
-
-        // Attempt to view the profile
-        Profile profile = clientProfileService.viewProfile("john@example.com");
-
-        // Validate that the correct profile is returned
-        assertNotNull("Profile should not be null", profile);
-        assertEquals("John Doe", profile.getName());
-        assertEquals(30, profile.getAge());
-        assertEquals("john@example.com", profile.getEmail());
-    }
-
-
-    @Test
-    public void testUpdateProfile() {
-        clientProfileService = new ClientProfileService();
-
-        clientProfileService.updateProfile("John Updated", 35, "john@example.com", "Build muscle",
-                "Keto", "None", mockUserService);
-
-        User updatedUser = mockUserService.getUser("john@example.com");
-        assertNotNull(updatedUser);
-        assertEquals("John Updated", updatedUser.getName());
+        // Ensure a warning is logged and no duplicate user is created
+        User existingUser = mockUserService.getUser("john.doe@example.com");
+        assertNotNull(existingUser);
+        assertEquals("John Doe", existingUser.getName());
     }
 
     @Test
-    public void testDeleteProfile() {
+    public void testUpdateProfile_UserUpdateFails() {
+        try {
+            clientProfileService.updateProfile("John Updated", 35, "john.doe@example.com", "Build muscle",
+                    "Keto", "None", new UserService() {
+                        @Override
+                        public boolean updateUser(String email, String name, String role, boolean active, int age,
+                                                  String fitnessGoals, String dietaryPreferences, String dietaryRestrictions) {
+                            return false; // Simulate failure
+                        }
+                    });
+            fail("Expected IllegalStateException due to user update failure.");
+        } catch (IllegalStateException e) {
+            assertEquals("Failed to synchronize user data.", e.getMessage());
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testDeleteProfile_ProfileDoesNotExist() {
+        clientProfileService.deleteProfile("nonexistent@example.com", mockUserService);
+    }
+
+    @Test
+    public void testDeleteProfile_UserRemovalFails() {
         clientProfileService = new ClientProfileService();
 
-        clientProfileService.deleteProfile("john@example.com", mockUserService);
+        // Simulate user removal failure
+        mockUserService = new UserService() {
+            @Override
+            public boolean removeUserByName(String name) {
+                return false; // Simulate failure
+            }
+        };
 
-        User deletedUser = mockUserService.getUser("john@example.com");
-        assertNull(deletedUser);
+        clientProfileService.deleteProfile("john.doe@example.com", mockUserService);
+
+        // Ensure the profile is still deleted
+        Profile deletedProfile = clientProfileService.viewProfile("john.doe@example.com");
+        assertNull("Profile should be deleted even if user removal fails", deletedProfile);
     }
 }

@@ -2,6 +2,7 @@ package com.fitness.management;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 public class Program implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -168,5 +169,31 @@ public class Program implements Serializable {
             documents != null ? String.join(", ", documents) : "None"
         );
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Program program = (Program) obj;
+
+        return Double.compare(program.price, price) == 0 &&
+                enrollment == program.enrollment &&
+                isActive == program.isActive &&
+                title.equals(program.title) &&
+                Objects.equals(duration, program.duration) &&
+                Objects.equals(difficulty, program.difficulty) &&
+                Objects.equals(goals, program.goals) &&
+                Objects.equals(schedule, program.schedule) &&
+                Objects.equals(videos, program.videos) &&
+                Objects.equals(documents, program.documents) &&
+                Objects.equals(progressSummary, program.progressSummary);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, duration, difficulty, goals, price, schedule, videos, documents, enrollment, progressSummary, isActive);
+    }
+
 
 }

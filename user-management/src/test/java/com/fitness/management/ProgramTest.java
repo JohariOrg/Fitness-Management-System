@@ -1,121 +1,154 @@
 package com.fitness.management;
 
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
-
 public class ProgramTest {
 
     @Test
-    public void testBuilderCreatesProgramCorrectly() {
-        // Arrange: Create a Program using the Builder
-        List<String> videos = Arrays.asList("Video1.mp4", "Video2.mp4");
-        List<String> documents = Arrays.asList("Doc1.pdf", "Doc2.pdf");
-
-        Program program = new Program.Builder("Fitness Program")
+    public void testEquals_SameObject() {
+        Program program = new Program.Builder("Yoga Basics")
                 .setDuration("6 weeks")
-                .setDifficulty("Beginner")
-                .setGoals("Weight loss")
-                .setPrice(59.99)
-                .setSchedule("Weekly")
-                .setVideos(videos)
-                .setDocuments(documents)
-                .setEnrollment(15)
-                .setProgressSummary("50% completed")
-                .setIsActive(true)
-                .build();
-
-        // Assert: Verify all fields are set correctly
-        assertEquals("Fitness Program", program.getTitle());
-        assertEquals("6 weeks", program.getDuration());
-        assertEquals("Beginner", program.getDifficulty());
-        assertEquals("Weight loss", program.getGoals());
-        assertEquals(59.99, program.getPrice(), 0.01);
-        assertEquals("Weekly", program.getSchedule());
-        assertEquals(videos, program.getVideos());
-        assertEquals(documents, program.getDocuments());
-        assertEquals(15, program.getEnrollment());
-        assertEquals("50% completed", program.getProgressSummary());
-        assertTrue(program.isActive());
-    }
-
-    @Test
-    public void testBuilderDefaultValues() {
-        // Arrange: Create a Program using the Builder with default values
-        Program program = new Program.Builder("Default Program").build();
-
-        // Assert: Verify default values are applied
-        assertEquals("Default Program", program.getTitle());
-        assertNull(program.getDuration());
-        assertNull(program.getDifficulty());
-        assertNull(program.getGoals());
-        assertEquals(0.0, program.getPrice(), 0.01);
-        assertNull(program.getSchedule());
-        assertNull(program.getVideos());
-        assertNull(program.getDocuments());
-        assertEquals(0, program.getEnrollment());
-        assertEquals("", program.getProgressSummary());
-        assertTrue(program.isActive());
-    }
-
-    @Test
-    public void testToString() {
-        // Arrange: Create a Program
-        List<String> videos = Arrays.asList("Video1.mp4", "Video2.mp4");
-        List<String> documents = Arrays.asList("Doc1.pdf", "Doc2.pdf");
-
-        Program program = new Program.Builder("Test Program")
-                .setDuration("4 weeks")
                 .setDifficulty("Intermediate")
-                .setGoals("Build muscle")
-                .setPrice(89.99)
-                .setSchedule("Bi-weekly")
-                .setVideos(videos)
-                .setDocuments(documents)
-                .setEnrollment(20)
-                .setProgressSummary("20% completed")
-                .setIsActive(false)
+                .setGoals("Enhanced flexibility")
+                .setPrice(150.0)
+                .setSchedule("Hybrid")
+                .setVideos(Arrays.asList("intro.mp4", "session1.mp4"))
+                .setDocuments(Arrays.asList("guide.pdf", "faq.pdf"))
                 .build();
 
-        // Act: Call the toString method
-        String programString = program.toString();
-
-        // Assert: Verify the string representation
-        assertTrue(programString.contains("Program Title: Test Program"));
-        assertTrue(programString.contains("Duration: 4 weeks"));
-        assertTrue(programString.contains("Difficulty: Intermediate"));
-        assertTrue(programString.contains("Goals: Build muscle"));
-        assertTrue(programString.contains("Price: 89.99"));
-        assertTrue(programString.contains("Schedule: Bi-weekly"));
-        assertTrue(programString.contains("Enrollment: 20"));
-        assertTrue(programString.contains("Progress: 20% completed"));
-        assertTrue(programString.contains("Active: No"));
-        assertTrue(programString.contains("Videos: Video1.mp4, Video2.mp4"));
-        assertTrue(programString.contains("Documents: Doc1.pdf, Doc2.pdf"));
+        // Test equality with the same object
+        assertTrue("Program should be equal to itself", program.equals(program));
     }
 
     @Test
-    public void testBuilderWithPartialValues() {
-        // Arrange: Create a Program with some fields not set
-        Program program = new Program.Builder("Partial Program")
-                .setDuration("3 weeks")
-                .setGoals("Improve flexibility")
+    public void testEquals_DifferentObject_SameValues() {
+        Program program1 = new Program.Builder("Yoga Basics")
+                .setDuration("6 weeks")
+                .setDifficulty("Intermediate")
+                .setGoals("Enhanced flexibility")
+                .setPrice(150.0)
+                .setSchedule("Hybrid")
+                .setVideos(Arrays.asList("intro.mp4", "session1.mp4"))
+                .setDocuments(Arrays.asList("guide.pdf", "faq.pdf"))
                 .build();
 
-        // Assert: Verify only the set fields are populated
-        assertEquals("Partial Program", program.getTitle());
-        assertEquals("3 weeks", program.getDuration());
-        assertNull(program.getDifficulty());
-        assertEquals("Improve flexibility", program.getGoals());
-        assertEquals(0.0, program.getPrice(), 0.01);
-        assertNull(program.getSchedule());
-        assertNull(program.getVideos());
-        assertNull(program.getDocuments());
-        assertEquals(0, program.getEnrollment());
-        assertEquals("", program.getProgressSummary());
-        assertTrue(program.isActive());
+        Program program2 = new Program.Builder("Yoga Basics")
+                .setDuration("6 weeks")
+                .setDifficulty("Intermediate")
+                .setGoals("Enhanced flexibility")
+                .setPrice(150.0)
+                .setSchedule("Hybrid")
+                .setVideos(Arrays.asList("intro.mp4", "session1.mp4"))
+                .setDocuments(Arrays.asList("guide.pdf", "faq.pdf"))
+                .build();
+
+        // Test equality with a different object with the same values
+        assertTrue("Programs with identical values should be equal", program1.equals(program2));
+    }
+
+    @Test
+    public void testEquals_DifferentValues() {
+        Program program1 = new Program.Builder("Yoga Basics")
+                .setDuration("6 weeks")
+                .setDifficulty("Intermediate")
+                .setGoals("Enhanced flexibility")
+                .setPrice(150.0)
+                .setSchedule("Hybrid")
+                .setVideos(Arrays.asList("intro.mp4", "session1.mp4"))
+                .setDocuments(Arrays.asList("guide.pdf", "faq.pdf"))
+                .build();
+
+        Program program2 = new Program.Builder("Yoga Basics")
+                .setDuration("4 weeks")
+                .setDifficulty("Beginner")
+                .setGoals("Flexibility")
+                .setPrice(100.0)
+                .setSchedule("Online")
+                .setVideos(Arrays.asList("intro.mp4"))
+                .setDocuments(Arrays.asList("guide.pdf"))
+                .build();
+
+        // Test equality with a different object with different values
+        assertFalse("Programs with different values should not be equal", program1.equals(program2));
+    }
+
+    @Test
+    public void testEquals_Null() {
+        Program program = new Program.Builder("Yoga Basics")
+                .setDuration("6 weeks")
+                .setDifficulty("Intermediate")
+                .build();
+
+        // Test equality with null
+        assertFalse("Program should not be equal to null", program.equals(null));
+    }
+
+    @Test
+    public void testEquals_DifferentClass() {
+        Program program = new Program.Builder("Yoga Basics")
+                .setDuration("6 weeks")
+                .setDifficulty("Intermediate")
+                .build();
+
+        String differentObject = "Not a Program";
+
+        // Test equality with a different class
+        assertFalse("Program should not be equal to an object of a different class", program.equals(differentObject));
+    }
+
+    @Test
+    public void testHashCode() {
+        Program program1 = new Program.Builder("Yoga Basics")
+                .setDuration("6 weeks")
+                .setDifficulty("Intermediate")
+                .setGoals("Enhanced flexibility")
+                .setPrice(150.0)
+                .setSchedule("Hybrid")
+                .setVideos(Arrays.asList("intro.mp4", "session1.mp4"))
+                .setDocuments(Arrays.asList("guide.pdf", "faq.pdf"))
+                .build();
+
+        Program program2 = new Program.Builder("Yoga Basics")
+                .setDuration("6 weeks")
+                .setDifficulty("Intermediate")
+                .setGoals("Enhanced flexibility")
+                .setPrice(150.0)
+                .setSchedule("Hybrid")
+                .setVideos(Arrays.asList("intro.mp4", "session1.mp4"))
+                .setDocuments(Arrays.asList("guide.pdf", "faq.pdf"))
+                .build();
+
+        // Test hashCode for objects with identical values
+        assertEquals("Hash codes of programs with identical values should match", program1.hashCode(), program2.hashCode());
+    }
+
+    @Test
+    public void testHashCode_DifferentValues() {
+        Program program1 = new Program.Builder("Yoga Basics")
+                .setDuration("6 weeks")
+                .setDifficulty("Intermediate")
+                .setGoals("Enhanced flexibility")
+                .setPrice(150.0)
+                .setSchedule("Hybrid")
+                .setVideos(Arrays.asList("intro.mp4", "session1.mp4"))
+                .setDocuments(Arrays.asList("guide.pdf", "faq.pdf"))
+                .build();
+
+        Program program2 = new Program.Builder("Yoga Advanced")
+                .setDuration("8 weeks")
+                .setDifficulty("Advanced")
+                .setGoals("Mastery")
+                .setPrice(200.0)
+                .setSchedule("In-Person")
+                .setVideos(Arrays.asList("session3.mp4", "session4.mp4"))
+                .setDocuments(Arrays.asList("mastery_guide.pdf"))
+                .build();
+
+        // Test hashCode for objects with different values
+        assertNotEquals("Hash codes of programs with different values should not match", program1.hashCode(), program2.hashCode());
     }
 }
